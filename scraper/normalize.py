@@ -68,7 +68,7 @@ def normalize(raw: dict[str, Any]) -> dict[str, Any] | None:
     price = raw.get("customPriceRange") or raw.get("priceRange") or {}
     loc = raw.get("location") or {}
     images = raw.get("customMedia") or raw.get("images") or []
-    curators = raw.get("curators") or raw.get("curatorSpotlight") and [raw["curatorSpotlight"]] or []
+    spotlight = raw.get("curatorSpotlight") or next(iter(raw.get("curators") or []), None) or {}
     time_name = (raw.get("timeRating") or {}).get("name", "")
 
     tags = [cat_key, TIME_TAG.get(time_name)]
@@ -91,7 +91,10 @@ def normalize(raw: dict[str, Any]) -> dict[str, Any] | None:
         "lng": loc.get("longitude"),
         "image_url": (images[0]["url"] + "?w=800&auto=format") if images else None,
         "pearlclub_url": f"{SITE}/cities/{city['slug']}/{cat_key}/{slug}",
-        "curator": curators[0]["name"] if curators else None,
+        "curator": spotlight.get("name"),
+        "curator_slug": spotlight.get("slug"),
+        "curator_image": (spotlight.get("profileImage") or {}).get("url"),
+        "curator_type": (spotlight.get("localType") or {}).get("key"),
     }
 
 

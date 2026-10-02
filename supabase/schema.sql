@@ -21,6 +21,9 @@ create table if not exists places (
   image_url text,
   pearlclub_url text not null,
   curator text,
+  curator_slug text,
+  curator_image text,
+  curator_type text,
   search_text text generated always as (
     lower(coalesce(name,'') || ' ' || coalesce(description,'') || ' ' ||
           coalesce(neighborhood,'') || ' ' || immutable_array_to_string(tags,' '))
@@ -90,3 +93,5 @@ alter table profiles enable row level security;
 alter table saved_places enable row level security;
 alter table bookings enable row level security;
 alter table usage enable row level security;
+
+-- Vector search + curator columns for existing databases: see migration_002.sql

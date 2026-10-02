@@ -6,10 +6,12 @@ import {
   isStepCount,
   streamText,
   toUIMessageStream,
+  type ModelMessage,
   type UIMessage,
 } from "ai";
 import { z } from "zod";
-import { pickModel } from "@/lib/model";
+import { getLiveContext } from "@/lib/context";
+import { pickFastModel, pickModel } from "@/lib/model";
 import { getHotel } from "@/lib/hotels";
 import { isLanguage } from "@/lib/i18n";
 import { buildFollowupPrompt, buildSystemPrompt } from "@/lib/prompts";
@@ -56,6 +58,31 @@ function prepareMessages(messages: UIMessage[]): UIMessage[] {
   );
 }
 
+const lastUserText = (messages: UIMessage[]): string =>
+  messages
+    .findLast((m) => m.role === "user")
+    ?.parts.map((p) => (p.type === "text" ? p.text : ""))
+    .join(" ")
+    .slice(0, 300) ?? "";
+
+/** Plain-text digest of the assistant turn: its words plus which cards it showed. */
+function summarizeTurn(messages: ModelMessage[]): string {
+  const text: string[] = [];
+  const tools = new Set<string>();
+  for (const m of messages) {
+    if (m.role !== "assistant" || typeof m.content === "string") {
+      if (m.role === "assistant" && typeof m.content === "string") text.push(m.content);
+      continue;
+    }
+    for (const part of m.content) {
+      if (part.type === "text") text.push(part.text);
+      if (part.type === "tool-call") tools.add(part.toolName);
+    }
+  }
+  const shown = tools.size ? ` [shown: ${[...tools].join(", ")}]` : "";
+  return `${text.join(" ").slice(0, 600)}${shown}`;
+}
+
 export async function POST(req: Request): Promise<Response> {
   try {
     const sessionId = requireSessionId(req);
@@ -66,12 +93,13 @@ export async function POST(req: Request): Promise<Response> {
     const { messages, hotelId, userLocation } = parsed.data;
     const language = isLanguage(parsed.data.language) ? parsed.data.language : "en";
 
-    await enforceRateLimit(sessionId);
-
     const hotel = getHotel(hotelId);
-    const [profile, savedPlaces] = await Promise.all([
+    // Independent lookups run together; the rate-limit check throws before any model work starts.
+    const [, profile, savedPlaces, live] = await Promise.all([
+      enforceRateLimit(sessionId),
       getProfile(sessionId),
       getSavedPlaces(sessionId),
+      getLiveContext(hotel),
     ]);
     const location = userLocation ?? null;
 
@@ -81,9 +109,10 @@ export async function POST(req: Request): Promise<Response> {
       profile,
       savedIds: savedPlaces.map((p) => p.id),
       userLocation: location,
+      rainy: live.weather?.rainy ?? false,
     });
     const model = pickModel();
-    const history = await convertToModelMessages(prepareMessages(messages));
+    const history = await convertToModelMessages(prepareMessages(messages), { tools: mainTools });
 
     const stream = createUIMessageStream({
       onError: (err) => {
@@ -105,7 +134,7 @@ export async function POST(req: Request): Promise<Response> {
             savedPlaces,
             language,
             userLocation: location,
-            now: new Date(),
+            live,
           }),
           messages: history,
           tools: mainTools,
@@ -118,13 +147,14 @@ export async function POST(req: Request): Promise<Response> {
 
         // Pass 2: follow-up chips, forced so every turn has them regardless of model compliance.
         const followups = streamText({
-          model,
+          model: pickFastModel(),
           instructions: buildFollowupPrompt(language),
-          // Gemini rejects requests that end on a model turn, so close with a user nudge.
+          // Short context keeps this pass fast. Providers reject a trailing model turn, so end on a user nudge.
           messages: [
-            ...history,
-            ...answerMessages,
-            { role: "user", content: "Suggest what I might do next." },
+            {
+              role: "user",
+              content: `Guest said: ${lastUserText(messages)}\nConcierge replied: ${summarizeTurn(answerMessages)}\nSuggest what the guest might do next.`,
+            },
           ],
           tools: { suggest_followups },
           toolChoice: { type: "tool", toolName: "suggest_followups" },

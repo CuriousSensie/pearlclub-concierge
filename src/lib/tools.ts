@@ -1,10 +1,11 @@
 import "server-only";
 import { tool } from "ai";
 import { z } from "zod";
-import { getPlacesByIds, resolvePlaces, searchPlaces } from "./places";
+import { buildPlan } from "./planner";
+import { getPlacesByIds, searchPlaces } from "./places";
 import { upsertProfile } from "./profile";
 import { COVERED_CITIES, type Hotel } from "./hotels";
-import type { Place, Profile, TimeSlot, UserLocation } from "@/types";
+import type { PlaceSummary, Profile, TimeSlot, UserLocation } from "@/types";
 
 export type ToolContext = {
   sessionId: string;
@@ -12,6 +13,7 @@ export type ToolContext = {
   profile: Profile | null;
   savedIds: string[];
   userLocation: UserLocation | null;
+  rainy: boolean;
 };
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
@@ -27,6 +29,17 @@ const citySlug = z
   .describe(
     `City slug. One of: ${COVERED_CITIES.map((c) => c.slug).join(", ")}. Defaults to the hotel's city.`,
   );
+
+/** Trimmed view of a place sent back to the model (the UI still gets the full record). */
+const compactPlace = (p: PlaceSummary) => ({
+  id: p.id,
+  name: p.name,
+  category: p.category,
+  price: p.price_level ? "$".repeat(p.price_level) : null,
+  recommended_by: p.curator,
+  about: p.description ? p.description.slice(0, 180) : null,
+  distance_km: p.distance_km ?? null,
+});
 
 export function createTools(ctx: ToolContext) {
   const { hotel, profile } = ctx;
@@ -87,12 +100,6 @@ export function createTools(ctx: ToolContext) {
           ),
         near_lat: z.number().min(-90).max(90).optional(),
         near_lng: z.number().min(-180).max(180).optional(),
-        for_plan: z
-          .boolean()
-          .optional()
-          .describe(
-            "true when gathering candidates for plan_day; the guest then sees only the final plan, not these results",
-          ),
         include_saved: z
           .boolean()
           .optional()
@@ -118,8 +125,12 @@ export function createTools(ctx: ToolContext) {
             ...(profile?.travel_style ? [profile.travel_style] : []),
           ],
         });
-        return { places, for_plan: input.for_plan === true };
+        return { places };
       },
+      toModelOutput: ({ output }) => ({
+        type: "json",
+        value: { places: output.places.map(compactPlace) },
+      }),
     }),
 
     get_place_details: tool({
@@ -206,46 +217,67 @@ export function createTools(ctx: ToolContext) {
 
     plan_day: tool({
       description:
-        "Build a day itinerary from place ids returned by search_places. Call search_places first. 3-5 stops in geographic and time order.",
+        "Build a full-day itinerary (morning, lunch, afternoon, evening) from Pearl Club places, in a walkable order, aware of the weather. Call this directly; do not search first. To swap one stop, pass keep (the stops to keep) and exclude_ids (the stop being replaced).",
       inputSchema: z.object({
         city_slug: citySlug,
         date: z.string().regex(ISO_DATE).optional(),
-        theme: z.string().max(80).optional(),
-        stops: z
-          .array(
-            z.object({
-              time_slot: z.enum(TIME_SLOTS),
-              place_id: z
-                .string()
-                .describe("The `id` field from search_places results, not the name"),
-              reason: z.string().max(240),
-            }),
-          )
-          .min(2)
-          .max(6),
+        theme: z
+          .string()
+          .max(80)
+          .optional()
+          .describe("Short title for the day, in the guest's language"),
+        vibe: z
+          .string()
+          .max(120)
+          .optional()
+          .describe("Optional mood or interests, e.g. 'quiet, bookish, vegetarian'"),
+        slots: z.array(z.enum(TIME_SLOTS)).optional().describe("Defaults to all four slots"),
+        keep: z.array(z.object({ time_slot: z.enum(TIME_SLOTS), place_id: z.string() })).optional(),
+        exclude_ids: z.array(z.string()).optional(),
       }),
-      execute: async ({ city_slug, date, theme, stops }) => {
+      execute: async ({ city_slug, date, theme, vibe, slots, keep, exclude_ids }) => {
         const city = validCity(city_slug);
-        const found = await resolvePlaces(
-          stops.map((s) => s.place_id),
-          city,
-        );
-        const missing = stops.filter((s) => !found.has(s.place_id)).map((s) => s.place_id);
-        if (missing.length)
-          return {
-            error: `Unknown place ids: ${missing.join(", ")}. Use the id field from search_places.`,
-          };
+        const plan = await buildPlan({
+          hotel,
+          citySlug: city,
+          vibe,
+          slots,
+          keep,
+          excludeIds: exclude_ids,
+          interests: [
+            ...(profile?.interests ?? []),
+            ...(profile?.travel_style ? [profile.travel_style] : []),
+          ],
+          rainy: ctx.rainy,
+        });
+        if (!plan.length) return { error: "No places found for that plan" };
         return {
           city_slug: city,
           date,
           theme,
-          plan: stops.map((s) => ({
-            time_slot: s.time_slot,
-            place: found.get(s.place_id) as Place,
-            reason: s.reason,
-          })),
+          weather_note: ctx.rainy
+            ? "Rain is expected, so the afternoon favours indoor places."
+            : undefined,
+          plan,
         };
       },
+      toModelOutput: ({ output }) => ({
+        type: "json",
+        value:
+          "error" in output
+            ? output
+            : {
+                weather_note: output.weather_note,
+                plan: output.plan.map((st) => ({
+                  slot: st.time_slot,
+                  id: st.place.id,
+                  name: st.place.name,
+                  category: st.place.category,
+                  recommended_by: st.place.curator,
+                  walk_min: st.walk_min,
+                })),
+              },
+      }),
     }),
 
     show_map: tool({

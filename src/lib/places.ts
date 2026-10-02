@@ -1,4 +1,6 @@
 import "server-only";
+import { openai } from "@ai-sdk/openai";
+import { embed } from "ai";
 import { getSupabase } from "./supabase";
 import { haversineKm } from "./geo";
 import type { Place, PlaceSummary } from "@/types";
@@ -79,41 +81,97 @@ export async function searchPlaces(p: SearchParams): Promise<PlaceSummary[]> {
     return (data ?? []) as Place[];
   };
 
-  // Keywords narrow the pool, but a thin match must not return nothing: top up from the
-  // unfiltered pool so vague queries ("something cozy") still surface real places.
-  let rows = await run(true);
-  if (!rows.length && p.tags?.length) rows = await run(true, true);
-  if (kws.length && rows.length < p.limit) {
-    const seen = new Set(rows.map((r) => r.id));
-    rows = [...rows, ...(await run(false)).filter((r) => !seen.has(r.id))];
+  // Vibe queries use embeddings; without a query (or if vectors are unavailable) fall back to keywords.
+  const sims = p.query?.trim() ? await vectorMatches(p) : null;
+  let rows: Place[];
+  if (sims) {
+    rows = await getPlacesByIds([...sims.keys()]);
+  } else {
+    // Keywords narrow the pool, but a thin match must not return nothing: top up from the
+    // unfiltered pool so vague queries ("something cozy") still surface real places.
+    rows = await run(true);
+    if (!rows.length && p.tags?.length) rows = await run(true, true);
+    if (kws.length && rows.length < p.limit) {
+      const seen = new Set(rows.map((r) => r.id));
+      rows = [...rows, ...(await run(false)).filter((r) => !seen.has(r.id))];
+    }
   }
 
+  const simValues = sims ? [...sims.values()] : [];
+  const simMin = Math.min(...simValues);
+  const simRange = Math.max(...simValues) - simMin || 1;
   const interests = (p.interests ?? []).map((i) => i.toLowerCase());
   const scored = shuffle(rows).map((place) => {
     const text = `${place.name} ${place.description ?? ""} ${place.tags.join(" ")}`.toLowerCase();
-    const kwScore = kws.filter((k) => text.includes(k)).length;
     const interestScore = interests.filter((i) => text.includes(i)).length;
+    // Relevance in [0, 1]: normalised vector similarity, or keyword hits.
+    const relevance = sims
+      ? ((sims.get(place.id) ?? simMin) - simMin) / simRange
+      : Math.min(1, kws.filter((k) => text.includes(k)).length / 2);
     const distance =
       p.near && place.lat != null && place.lng != null
         ? haversineKm(p.near.lat, p.near.lng, place.lat, place.lng)
         : null;
-    return { place, score: kwScore * 2 + interestScore, distance };
+    return { place, relevance, interestScore, distance };
   });
 
   scored.sort((a, b) => {
     if (p.near) {
       if (a.distance == null) return 1;
       if (b.distance == null) return -1;
-      // Nearby first, but let strong relevance matches win within ~1.5 km.
-      return a.distance - 0.75 * a.score - (b.distance - 0.75 * b.score);
+      // Nearby first, but a strong match can outrank ~2.5 km of extra distance.
+      const rank = (x: typeof a) =>
+        (x.distance as number) - 2.5 * x.relevance - 0.4 * x.interestScore;
+      return rank(a) - rank(b);
     }
-    return b.score - a.score;
+    return b.relevance * 3 + b.interestScore * 0.5 - (a.relevance * 3 + a.interestScore * 0.5);
   });
 
   return scored.slice(0, p.limit).map(({ place, distance }) => ({
     ...place,
     distance_km: distance != null ? Math.round(distance * 100) / 100 : null,
   }));
+}
+
+const EMBED_MODEL = "text-embedding-3-small";
+const embeddingCache = new Map<string, number[]>();
+let vectorsRetryAt = 0; // after a failure, skip vectors for a minute (e.g. migration not applied yet)
+
+async function embedQuery(query: string): Promise<number[]> {
+  const key = query.trim().toLowerCase();
+  const hit = embeddingCache.get(key);
+  if (hit) return hit;
+  const { embedding } = await embed({ model: openai.embedding(EMBED_MODEL), value: key });
+  if (embeddingCache.size > 200) embeddingCache.clear();
+  embeddingCache.set(key, embedding);
+  return embedding;
+}
+
+/** Top semantic matches (id -> cosine similarity), or null if vector search isn't available. */
+async function vectorMatches(p: SearchParams): Promise<Map<string, number> | null> {
+  if (Date.now() < vectorsRetryAt || !process.env.OPENAI_API_KEY || !p.query) return null;
+  try {
+    const embedding = await embedQuery(p.query);
+    const { data, error } = await getSupabase().rpc("match_places", {
+      query_embedding: JSON.stringify(embedding),
+      p_city: p.city_slug,
+      p_category: p.category ?? null,
+      p_price_max: p.price_max ?? null,
+      p_exclude: p.excludeIds ?? [],
+      match_count: Math.max(40, p.limit * 6),
+    });
+    if (error) throw new Error(error.message);
+    const rows = (data ?? []) as { id: string; similarity: number }[];
+    return rows.length ? new Map(rows.map((r) => [r.id, r.similarity])) : null;
+  } catch (err) {
+    // Missing migration or a transient embedding failure: keyword search still works.
+    console.warn(
+      "vector search unavailable, using keywords:",
+      err instanceof Error ? err.message : err,
+    );
+    vectorsRetryAt = Date.now() + 60_000;
+    return null;
+  }
 }
 
 export async function getPlacesByIds(ids: string[]): Promise<Place[]> {

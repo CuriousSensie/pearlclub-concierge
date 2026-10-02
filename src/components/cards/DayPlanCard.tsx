@@ -1,9 +1,10 @@
 "use client";
 
-import { BookmarkPlus, Shuffle } from "lucide-react";
+import { BookmarkPlus, Footprints, Shuffle } from "lucide-react";
 import { useApp } from "../AppContext";
 import { MapCard } from "./MapCard";
 import { PlaceCard } from "./PlaceCard";
+import { fill } from "@/lib/i18n";
 import type { DayPlanStop, TimeSlot } from "@/types";
 
 export function DayPlanCard({
@@ -40,9 +41,29 @@ export function DayPlanCard({
             {i < plan.length - 1 && (
               <span aria-hidden className="absolute -bottom-5 start-[9.5px] top-6 w-px bg-line" />
             )}
-            <p className="text-sm font-semibold">{slotLabel[stop.time_slot]}</p>
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-sm font-semibold">{slotLabel[stop.time_slot]}</p>
+              {stop.walk_min != null && (
+                <span className="inline-flex items-center gap-1 text-xs text-muted">
+                  <Footprints aria-hidden className="size-3.5" />
+                  {fill(s.walkMin, { n: String(stop.walk_min) })}
+                </span>
+              )}
+            </div>
             <p className="mb-2.5 mt-0.5 text-sm leading-relaxed text-muted">{stop.reason}</p>
             <PlaceCard place={stop.place} variant="row" />
+            <button
+              type="button"
+              onClick={() =>
+                sendText(
+                  `Swap stop ${i + 1} (${stop.time_slot}: ${stop.place.name}) for something different.`,
+                )
+              }
+              className="mt-1.5 inline-flex h-8 items-center gap-1.5 text-xs font-medium text-muted hover:text-ink"
+            >
+              <Shuffle aria-hidden className="size-3.5" />
+              {s.swap}
+            </button>
           </li>
         ))}
       </ol>
@@ -55,14 +76,6 @@ export function DayPlanCard({
         >
           <BookmarkPlus aria-hidden className="size-4" />
           {s.saveAll}
-        </button>
-        <button
-          type="button"
-          onClick={() => sendText("Swap one stop in my plan for something different.")}
-          className="inline-flex h-10 items-center gap-2 rounded-full border border-line bg-card px-4 text-sm font-medium"
-        >
-          <Shuffle aria-hidden className="size-4" />
-          {s.swapStop}
         </button>
       </div>
     </section>

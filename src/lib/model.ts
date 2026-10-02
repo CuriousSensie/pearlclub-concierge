@@ -21,3 +21,10 @@ export function pickModel() {
   if (!ids.length) throw new Error("Set OPENAI_API_KEY + OPENAI_MODEL, or AI_MODELS for Gemini");
   return google(ids[Math.floor(Math.random() * ids.length)]);
 }
+
+/** Small, quick model for short structured jobs such as follow-up chips. */
+export function pickFastModel() {
+  if (process.env.OPENAI_API_KEY)
+    return openai(process.env.OPENAI_FAST_MODEL?.trim() || "gpt-4.1-nano");
+  return pickModel();
+}

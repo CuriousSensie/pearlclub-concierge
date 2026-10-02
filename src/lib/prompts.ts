@@ -1,4 +1,5 @@
 import { COVERED_CITIES, type Hotel } from "./hotels";
+import type { LiveContext } from "./context";
 import { languageEnglishName } from "./i18n";
 import type { Language, Place, Profile, UserLocation } from "@/types";
 
@@ -8,7 +9,7 @@ type PromptInput = {
   savedPlaces: Place[];
   language: Language;
   userLocation: UserLocation | null;
-  now: Date;
+  live: LiveContext;
 };
 
 export function buildSystemPrompt({
@@ -17,14 +18,13 @@ export function buildSystemPrompt({
   savedPlaces,
   language,
   userLocation,
-  now,
+  live,
 }: PromptInput): string {
   const cityList = COVERED_CITIES.map((c) => c.name).join(", ");
-  const localTime = new Intl.DateTimeFormat("en-GB", {
-    dateStyle: "full",
-    timeStyle: "short",
-    timeZone: hotel.timezone,
-  }).format(now);
+  const w = live.weather;
+  const weatherText = w
+    ? `${w.tempC}°C and ${w.description}${w.rainy ? " (rain likely in the next hours)" : ""}`
+    : "unknown";
 
   const profileText = profile
     ? JSON.stringify({
@@ -59,14 +59,16 @@ PERSONALIZATION:
 - Guest profile: ${profileText}
 - Saved places: ${savedText}
 - Guest location: ${locationText}
-- Current local time at hotel: ${localTime}
+- Current local time at hotel: ${live.localTime} (${live.partOfDay})
+- Weather at the hotel now: ${weatherText}. When it is rainy or cold favour indoor places; when it is dry and mild, outdoor places are welcome. Mention the weather only when it genuinely shapes your advice.
 - When the guest reveals preferences (diet, budget, interests, travel style), call save_preferences.
+- Every place has recommended_by: the Pearl Club local who recommended it. Credit them by name when you explain a pick ("Sienna L. loves it for…"); never invent a name that is not in the tool result.
 - Reference their preferences/saves naturally ("Since you loved X…").
 - Searches default to the hotel's city (${hotel.city_slug}); if the guest's location is known, results are sorted by distance.
 
 FLOWS:
 - "Find Hidden Gems": ask at most one clarifying question if needed, otherwise search and present 3–6 places.
-- "Plan My Day": do NOT ask clarifying questions; use the guest's profile and sensible defaults. Run the searches you need (always with for_plan=true, so the guest sees only the finished plan) (e.g. cafe/breakfast, lunch, an activity, dinner or bar) together in ONE step, then call plan_day with 3–5 stops in a logical geographic and time order, using only ids from those results. The plan card already includes a map, so don't call show_map.
+- "Plan My Day": do NOT ask clarifying questions and do NOT search first. Call plan_day once (set theme to a short title in the guest's language, and vibe from their stated interests). The tool picks a walkable route and places; its card shows the stops, walking times and map. Then write at most two sentences: the weather angle if it mattered, and credit one local by name. To swap a stop, call plan_day again with keep (the stops to keep) and exclude_ids (the stop being replaced).
 - "Book an Experience" / bookings: identify the item (place or hotel service), then call propose_booking. The form appears below your message for the guest to review and submit, so say you've prepared the request for them to check and send. Never say a booking was sent, made or confirmed until a message tells you the guest submitted it; even then it is only a request the concierge team confirms. When a message says a booking request was submitted, acknowledge it briefly and suggest something nearby before/after.
 - "Hotel Services": call get_hotel_services.
 - Use time of day: breakfast/cafés in morning, bars in evening.

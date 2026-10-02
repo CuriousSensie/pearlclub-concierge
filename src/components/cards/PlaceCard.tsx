@@ -3,6 +3,7 @@
 import clsx from "clsx";
 import { ExternalLink, Heart } from "lucide-react";
 import { useApp } from "../AppContext";
+import { Curator } from "../Curator";
 import { CategoryGlyph } from "../icons";
 import { formatDistance } from "@/lib/geo";
 import type { PlaceSummary } from "@/types";
@@ -121,6 +122,7 @@ export function PlaceCard({
             </div>
             {heart}
           </div>
+          <Curator place={place} size="sm" />
           {actions}
         </div>
       </article>
@@ -138,6 +140,7 @@ export function PlaceCard({
             {meta}
           </p>
         </div>
+        <Curator place={place} />
         {place.description && (
           <p className="line-clamp-3 text-sm leading-relaxed text-ink/80">{place.description}</p>
         )}

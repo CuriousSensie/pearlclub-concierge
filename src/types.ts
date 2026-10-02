@@ -13,6 +13,10 @@ export type Place = {
   image_url: string | null;
   pearlclub_url: string;
   curator: string | null;
+  curator_slug: string | null;
+  curator_image: string | null;
+  /** Pearl Club local type, e.g. localPerson (a resident) or localBusiness. */
+  curator_type: string | null;
 };
 
 /** Place plus optional distance (km) from the guest/hotel, returned by search_places. */
@@ -34,7 +38,13 @@ export type Profile = {
 
 export type TimeSlot = "morning" | "lunch" | "afternoon" | "evening";
 
-export type DayPlanStop = { time_slot: TimeSlot; place: Place; reason: string };
+export type DayPlanStop = {
+  time_slot: TimeSlot;
+  place: PlaceSummary;
+  reason: string;
+  /** Estimated walking minutes from the previous stop (or the hotel for the first). */
+  walk_min?: number | null;
+};
 
 export type BookingType = "hotel_service" | "place";
 

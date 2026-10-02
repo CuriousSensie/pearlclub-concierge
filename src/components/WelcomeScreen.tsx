@@ -2,6 +2,7 @@
 
 import { CalendarDays, ChevronRight, ConciergeBell, Gem, MapPin, Ticket } from "lucide-react";
 import { useApp } from "./AppContext";
+import { DiscoverRails } from "./DiscoverRails";
 import { Onboarding } from "./Onboarding";
 import { fill } from "@/lib/i18n";
 import type { Profile } from "@/types";
@@ -57,6 +58,8 @@ export function WelcomeScreen({
           </button>
         ))}
       </nav>
+
+      <DiscoverRails />
 
       <div className="flex flex-col items-center gap-2.5">
         <button

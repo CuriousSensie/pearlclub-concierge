@@ -75,12 +75,22 @@ function Markdown({ text }: { text: string }) {
   );
 }
 
-function PlanningNote() {
+function Progress({ tool }: { tool: string }) {
   const { s } = useApp();
+  const label: Record<string, string> = {
+    search_places: s.progSearch,
+    plan_day: s.planning,
+    propose_booking: s.progBook,
+    get_hotel_services: s.progServices,
+    show_map: s.progMap,
+  };
   return (
-    <div role="status" className="flex items-center gap-2.5 py-1 text-sm text-muted">
-      <span aria-hidden className="pearl size-4 rounded-full" />
-      {s.planning}
+    <div role="status" className="space-y-2">
+      <p className="flex items-center gap-2.5 text-sm text-muted">
+        <span aria-hidden className="pearl size-4 rounded-full" />
+        {label[tool] ?? s.thinking}
+      </p>
+      <Skeleton />
     </div>
   );
 }
@@ -102,12 +112,6 @@ type ToolPart = {
   errorText?: string;
 };
 
-/** A search made only to feed plan_day; its results are never shown as cards. */
-const isPlanSearch = (p: ToolPart): boolean =>
-  p.type === "tool-search_places" &&
-  ((p.input as { for_plan?: boolean } | undefined)?.for_plan === true ||
-    (p.output as { for_plan?: boolean } | undefined)?.for_plan === true);
-
 /** Renders a tool part as a card; returns null for tools that render nothing (and for errors). */
 function ToolView({ part }: { part: ToolPart }) {
   const { hotel } = useApp();
@@ -122,7 +126,7 @@ function ToolView({ part }: { part: ToolPart }) {
     "get_place_details",
   ];
 
-  if (running) return cardTools.includes(name) ? <Skeleton /> : null;
+  if (running) return cardTools.includes(name) ? <Progress tool={name} /> : null;
   if (part.state !== "output-available") return null;
 
   const out = (part.output ?? {}) as Record<string, unknown>;
@@ -191,13 +195,8 @@ export function MessageBubble({ message }: { message: UIMessage }) {
         }
         if (part.type.startsWith("tool-")) {
           const tool = part as ToolPart;
-          // Planning flow: hide the candidate searches (however many) and show one note until the plan exists.
-          if (tool.type === "tool-search_places" && (hasPlan || isPlanSearch(tool))) {
-            const firstHidden = message.parts.findIndex(
-              (p) => p.type === "tool-search_places" && (hasPlan || isPlanSearch(p as ToolPart)),
-            );
-            return i === firstHidden && !hasPlan ? <PlanningNote key={i} /> : null;
-          }
+          // A plan card replaces any exploratory searches the model made while building it.
+          if (tool.type === "tool-search_places" && hasPlan) return null;
           return <ToolView key={i} part={tool} />;
         }
         return null;
