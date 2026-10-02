@@ -1,4 +1,4 @@
-import { openai } from "@ai-sdk/openai";
+import { google } from "@ai-sdk/google";
 import {
   convertToModelMessages,
   createUIMessageStreamResponse,
@@ -64,8 +64,8 @@ export async function POST(req: Request): Promise<Response> {
     const { messages, hotelId, userLocation } = parsed.data;
     const language = isLanguage(parsed.data.language) ? parsed.data.language : "en";
 
-    const modelId = process.env.OPENAI_MODEL;
-    if (!modelId) throw new HttpError(500, "OPENAI_MODEL is not configured");
+    const modelId = process.env.AI_MODEL;
+    if (!modelId) throw new HttpError(500, "AI_MODEL is not configured");
 
     await enforceRateLimit(sessionId);
 
@@ -77,7 +77,7 @@ export async function POST(req: Request): Promise<Response> {
     const location = userLocation ?? null;
 
     const result = streamText({
-      model: openai(modelId),
+      model: google(modelId),
       instructions: buildSystemPrompt({
         hotel,
         profile,

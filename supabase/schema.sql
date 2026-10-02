@@ -1,3 +1,11 @@
+-- array_to_string is only STABLE, which generated columns reject; this wrapper is safe for plain text arrays.
+create or replace function immutable_array_to_string(arr text[], sep text)
+returns text
+language sql
+immutable
+parallel safe
+as $$ select array_to_string(arr, sep) $$;
+
 create table if not exists places (
   id text primary key,
   name text not null,
@@ -15,7 +23,7 @@ create table if not exists places (
   curator text,
   search_text text generated always as (
     lower(coalesce(name,'') || ' ' || coalesce(description,'') || ' ' ||
-          coalesce(neighborhood,'') || ' ' || array_to_string(tags,' '))
+          coalesce(neighborhood,'') || ' ' || immutable_array_to_string(tags,' '))
   ) stored
 );
 create index if not exists places_city_idx on places(city_slug);

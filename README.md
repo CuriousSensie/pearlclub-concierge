@@ -19,7 +19,7 @@ An AI travel concierge for hotels, grounded in real [Pearl Club](https://www.pea
 ```mermaid
 flowchart LR
   U[Guest browser] -->|chat| API[/Next.js API: /api/chat/]
-  API -->|streamText + tools| LLM[OpenAI]
+  API -->|streamText + tools| LLM[Google Gemini]
   API --> DB[(Supabase: places, profiles, saves, bookings)]
   U -->|booking form| BK[/api/bookings/] --> DB
   SC[Python scraper] -->|places.json| DB
@@ -37,7 +37,7 @@ flowchart LR
 
 | Brief requirement | Implemented as |
 |---|---|
-| Conversational interface | Streaming chat via Vercel AI SDK + OpenAI |
+| Conversational interface | Streaming chat via Vercel AI SDK + Google Gemini |
 | Pearl Club content | Python scraper → JSON → Supabase `places` → `search_places` tool |
 | Personalisation | `profiles` + `saved_places` in the system prompt; geolocation distance sorting |
 | Hotel concierge bookings | `propose_booking` → inline form → `/api/bookings` → Supabase |
@@ -52,7 +52,7 @@ flowchart LR
 
 ```bash
 npm install
-cp .env.example .env.local        # fill in OpenAI, Supabase, MapTiler keys
+cp .env.example .env.local        # fill in Gemini, Supabase, MapTiler keys
 # apply supabase/schema.sql in the Supabase SQL editor, then:
 npx tsx supabase/seed.ts          # loads scraper/output/places.json
 npm run dev

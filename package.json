@@ -10,7 +10,7 @@
     "format": "prettier --write ."
   },
   "dependencies": {
-    "@ai-sdk/openai": "^4.0.83",
+    "@ai-sdk/google": "^4.0.87",
     "@ai-sdk/react": "^4.0.130",
     "@supabase/supabase-js": "^2.117.2",
     "ai": "^7.0.127",
