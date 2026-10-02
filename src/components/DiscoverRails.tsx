@@ -44,7 +44,7 @@ const SKY_ICON: Record<Sky, LucideIcon> = {
 
 /** Instant, model-free content for the first screen: live weather and rails of real places. */
 export function DiscoverRails() {
-  const { hotel, s, userLocation } = useApp();
+  const { hotel, lang, s, userLocation } = useApp();
   const [data, setData] = useState<Discover | null>(null);
   const lat = userLocation?.lat;
   const lng = userLocation?.lng;
@@ -75,7 +75,12 @@ export function DiscoverRails() {
     );
   }
 
-  const { weather, partOfDay, weekday } = data.context;
+  const { weather, partOfDay } = data.context;
+  // Formatted here (not on the server) so it follows the guest's chosen language.
+  const weekdayName = new Intl.DateTimeFormat(lang, {
+    weekday: "long",
+    timeZone: hotel.timezone,
+  }).format(new Date());
   const WeatherIcon = weather ? SKY_ICON[weather.sky] : null;
   const title = (r: Rail): string =>
     r.kind === "now"
@@ -108,7 +113,7 @@ export function DiscoverRails() {
         )}
         <span aria-hidden>·</span>
         <span>
-          {weekday} {s.part[partOfDay]}
+          {weekdayName} {s.part[partOfDay]}
         </span>
       </p>
       {data.rails.map((rail) => (
