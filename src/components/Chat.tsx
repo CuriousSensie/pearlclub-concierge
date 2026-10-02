@@ -84,6 +84,7 @@ export function Chat({ hotelId }: { hotelId: string }) {
   }, [lang]);
 
   useEffect(() => {
+    if (messages.length === 0) return;
     bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [messages, status]);
 
