@@ -33,6 +33,8 @@ export function MapCard({
 
     void import("maplibre-gl")
       .then((maplibregl) => {
+        // Bundlers break MapLibre's auto-detected worker; serve it from /public instead.
+        maplibregl.setWorkerUrl("/maplibre/maplibre-gl-worker.mjs");
         if (cancelled) return;
         const map = new maplibregl.Map({
           container: el,
