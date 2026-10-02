@@ -75,6 +75,16 @@ function Markdown({ text }: { text: string }) {
   );
 }
 
+function PlanningNote() {
+  const { s } = useApp();
+  return (
+    <div role="status" className="flex items-center gap-2.5 py-1 text-sm text-muted">
+      <span aria-hidden className="pearl size-4 rounded-full" />
+      {s.planning}
+    </div>
+  );
+}
+
 function Skeleton() {
   return (
     <div
@@ -84,7 +94,19 @@ function Skeleton() {
   );
 }
 
-type ToolPart = { type: string; state?: string; output?: unknown; errorText?: string };
+type ToolPart = {
+  type: string;
+  state?: string;
+  input?: unknown;
+  output?: unknown;
+  errorText?: string;
+};
+
+/** A search made only to feed plan_day; its results are never shown as cards. */
+const isPlanSearch = (p: ToolPart): boolean =>
+  p.type === "tool-search_places" &&
+  ((p.input as { for_plan?: boolean } | undefined)?.for_plan === true ||
+    (p.output as { for_plan?: boolean } | undefined)?.for_plan === true);
 
 /** Renders a tool part as a card; returns null for tools that render nothing (and for errors). */
 function ToolView({ part }: { part: ToolPart }) {
@@ -155,6 +177,8 @@ export function MessageBubble({ message }: { message: UIMessage }) {
     );
   }
 
+  const hasPlan = message.parts.some((p) => p.type === "tool-plan_day");
+
   return (
     <div className={clsx("rise space-y-3")}>
       {message.parts.map((part, i) => {
@@ -165,7 +189,17 @@ export function MessageBubble({ message }: { message: UIMessage }) {
             </div>
           ) : null;
         }
-        if (part.type.startsWith("tool-")) return <ToolView key={i} part={part as ToolPart} />;
+        if (part.type.startsWith("tool-")) {
+          const tool = part as ToolPart;
+          // Planning flow: hide the candidate searches (however many) and show one note until the plan exists.
+          if (tool.type === "tool-search_places" && (hasPlan || isPlanSearch(tool))) {
+            const firstHidden = message.parts.findIndex(
+              (p) => p.type === "tool-search_places" && (hasPlan || isPlanSearch(p as ToolPart)),
+            );
+            return i === firstHidden && !hasPlan ? <PlanningNote key={i} /> : null;
+          }
+          return <ToolView key={i} part={tool} />;
+        }
         return null;
       })}
     </div>

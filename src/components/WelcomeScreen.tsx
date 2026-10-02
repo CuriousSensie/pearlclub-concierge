@@ -7,10 +7,12 @@ import { fill } from "@/lib/i18n";
 import type { Profile } from "@/types";
 
 export function WelcomeScreen({
+  ready,
   profile,
   onProfile,
   onRequestLocation,
 }: {
+  ready: boolean;
   profile: Profile | null;
   onProfile: (p: Profile) => void;
   onRequestLocation: () => void;
@@ -69,7 +71,8 @@ export function WelcomeScreen({
         <p className="text-xs text-muted">{s.curatedNote}</p>
       </div>
 
-      <Onboarding profile={profile} onSaved={onProfile} />
+      {/* Wait for the local copy so saved preferences never flash the empty form. */}
+      {ready && <Onboarding profile={profile} onSaved={onProfile} />}
     </div>
   );
 }

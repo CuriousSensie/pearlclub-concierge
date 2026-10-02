@@ -87,6 +87,12 @@ export function createTools(ctx: ToolContext) {
           ),
         near_lat: z.number().min(-90).max(90).optional(),
         near_lng: z.number().min(-180).max(180).optional(),
+        for_plan: z
+          .boolean()
+          .optional()
+          .describe(
+            "true when gathering candidates for plan_day; the guest then sees only the final plan, not these results",
+          ),
         include_saved: z
           .boolean()
           .optional()
@@ -112,7 +118,7 @@ export function createTools(ctx: ToolContext) {
             ...(profile?.travel_style ? [profile.travel_style] : []),
           ],
         });
-        return { places };
+        return { places, for_plan: input.for_plan === true };
       },
     }),
 

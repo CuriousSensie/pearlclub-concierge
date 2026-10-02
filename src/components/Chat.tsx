@@ -12,6 +12,7 @@ import { TripDrawer } from "./TripDrawer";
 import { WelcomeScreen } from "./WelcomeScreen";
 import { useToast } from "./Toaster";
 import { getHotel } from "@/lib/hotels";
+import { readLocalProfile, writeLocalProfile } from "@/lib/localProfile";
 import { fill, isLanguage, isRTL, t } from "@/lib/i18n";
 import { sessionHeaders } from "@/lib/session";
 import type { Booking, Language, Place, Profile, UserLocation } from "@/types";
@@ -38,7 +39,8 @@ export function Chat({ hotelId }: { hotelId: string }) {
   const [lang, setLang] = useState<Language>("en");
   const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const [profile, setProfileState] = useState<Profile | null>(null);
+  const [hydrated, setHydrated] = useState(false);
   const [tripOpen, setTripOpen] = useState(false);
   const [bookingsVersion, setBookingsVersion] = useState(0);
   const [bookingCount, setBookingCount] = useState(0);
@@ -53,6 +55,9 @@ export function Chat({ hotelId }: { hotelId: string }) {
     // Reading localStorage must wait for the client to avoid a hydration mismatch.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setLang(readStoredLanguage());
+    const local = readLocalProfile();
+    setProfileState(local);
+    setHydrated(true);
     const headers = sessionHeaders();
     void Promise.all([
       fetch("/api/saves", { headers }).then((r) => r.json() as Promise<{ places?: Place[] }>),
@@ -65,7 +70,22 @@ export function Chat({ hotelId }: { hotelId: string }) {
     ])
       .then(([saves, prof, books]) => {
         setSavedIds(new Set((saves.places ?? []).map((p) => p.id)));
-        setProfile(prof.profile ?? null);
+        if (prof.profile) {
+          setProfile(prof.profile);
+        } else if (local) {
+          // Server copy is missing (new database or cleared); restore it from this browser.
+          void fetch("/api/profile", {
+            method: "POST",
+            headers: { "content-type": "application/json", ...headers },
+            body: JSON.stringify({
+              travel_style: local.travel_style,
+              budget: local.budget,
+              interests: local.interests,
+              dietary: local.dietary,
+              language: local.language,
+            }),
+          }).catch((err) => console.error("preference restore failed", err));
+        }
         setBookingCount((books.bookings ?? []).length);
         if (
           prof.profile?.language &&
@@ -91,6 +111,27 @@ export function Chat({ hotelId }: { hotelId: string }) {
       .getElementById(`msg-${lastUserId}`)
       ?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, [lastUserId]);
+
+  function setProfile(next: Profile) {
+    setProfileState(next);
+    writeLocalProfile(next);
+  }
+
+  // Preferences the bot learns from conversation (save_preferences) are mirrored locally too.
+  const learned = messages
+    .flatMap((m) => m.parts)
+    .findLast(
+      (p) => p.type === "tool-save_preferences" && "state" in p && p.state === "output-available",
+    );
+  const learnedProfile = (learned as { output?: { profile?: Profile } } | undefined)?.output
+    ?.profile;
+  const learnedKey = learnedProfile?.updated_at ?? null;
+  useEffect(() => {
+    if (learnedProfile) writeLocalProfile(learnedProfile);
+    // Keyed on the profile version so each saved preference is written once.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [learnedKey]);
+  const shownProfile = learnedProfile ?? profile;
 
   const requestBody = { hotelId: hotel.id, language: lang, userLocation };
 
@@ -228,7 +269,8 @@ export function Chat({ hotelId }: { hotelId: string }) {
           {messages.length === 0 ? (
             <div className="-mx-4">
               <WelcomeScreen
-                profile={profile}
+                ready={hydrated}
+                profile={shownProfile}
                 onProfile={setProfile}
                 onRequestLocation={requestLocation}
               />

@@ -29,6 +29,7 @@ export type Profile = {
   interests: string[];
   dietary: string[];
   home_city: string | null;
+  updated_at?: string;
 };
 
 export type TimeSlot = "morning" | "lunch" | "afternoon" | "evening";
