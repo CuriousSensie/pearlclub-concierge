@@ -65,3 +65,20 @@ export type Booking = {
 };
 
 export type UserLocation = { lat: number; lng: number };
+
+/** Shapes of tool outputs as rendered by the UI (mirrors lib/tools.ts). */
+export type BookingFormData = BookingForm & {
+  item_name: string;
+  requires_time?: boolean;
+  hotel_id: string;
+  pearlclub_url?: string;
+};
+
+export type HotelServiceInfo = {
+  id: string;
+  name: string;
+  description: string;
+  price: string;
+  requiresTime: boolean;
+  icon: string;
+};
