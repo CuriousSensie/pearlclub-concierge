@@ -1,6 +1,7 @@
-import { google } from "@ai-sdk/google";
 import {
+  APICallError,
   convertToModelMessages,
+  createUIMessageStream,
   createUIMessageStreamResponse,
   isStepCount,
   streamText,
@@ -8,9 +9,10 @@ import {
   type UIMessage,
 } from "ai";
 import { z } from "zod";
+import { pickModel } from "@/lib/model";
 import { getHotel } from "@/lib/hotels";
 import { isLanguage } from "@/lib/i18n";
-import { buildSystemPrompt } from "@/lib/prompts";
+import { buildFollowupPrompt, buildSystemPrompt } from "@/lib/prompts";
 import { getProfile } from "@/lib/profile";
 import { getSavedPlaces } from "@/lib/places";
 import {
@@ -64,9 +66,6 @@ export async function POST(req: Request): Promise<Response> {
     const { messages, hotelId, userLocation } = parsed.data;
     const language = isLanguage(parsed.data.language) ? parsed.data.language : "en";
 
-    const modelId = process.env.AI_MODEL;
-    if (!modelId) throw new HttpError(500, "AI_MODEL is not configured");
-
     await enforceRateLimit(sessionId);
 
     const hotel = getHotel(hotelId);
@@ -76,28 +75,66 @@ export async function POST(req: Request): Promise<Response> {
     ]);
     const location = userLocation ?? null;
 
-    const result = streamText({
-      model: google(modelId),
-      instructions: buildSystemPrompt({
-        hotel,
-        profile,
-        savedPlaces,
-        language,
-        userLocation: location,
-        now: new Date(),
-      }),
-      messages: await convertToModelMessages(prepareMessages(messages)),
-      tools: createTools({
-        sessionId,
-        hotel,
-        profile,
-        savedIds: savedPlaces.map((p) => p.id),
-        userLocation: location,
-      }),
-      stopWhen: isStepCount(6),
+    const { suggest_followups, ...mainTools } = createTools({
+      sessionId,
+      hotel,
+      profile,
+      savedIds: savedPlaces.map((p) => p.id),
+      userLocation: location,
+    });
+    const model = pickModel();
+    const history = await convertToModelMessages(prepareMessages(messages));
+
+    const stream = createUIMessageStream({
+      onError: (err) => {
+        console.error("chat stream error", err);
+        // Surface provider rate limits distinctly so the UI can say "busy" instead of "broken".
+        return APICallError.isInstance(err) && err.statusCode === 429
+          ? "model_busy"
+          : "An error occurred.";
+      },
+      execute: async ({ writer }) => {
+        writer.write({ type: "start" });
+
+        // Pass 1: the answer, with the real tools (search, plan, booking, ...).
+        const answer = streamText({
+          model,
+          instructions: buildSystemPrompt({
+            hotel,
+            profile,
+            savedPlaces,
+            language,
+            userLocation: location,
+            now: new Date(),
+          }),
+          messages: history,
+          tools: mainTools,
+          stopWhen: isStepCount(6),
+        });
+        writer.merge(
+          toUIMessageStream({ stream: answer.stream, sendStart: false, sendFinish: false }),
+        );
+        const answerMessages = await answer.responseMessages;
+
+        // Pass 2: follow-up chips, forced so every turn has them regardless of model compliance.
+        const followups = streamText({
+          model,
+          instructions: buildFollowupPrompt(language),
+          // Gemini rejects requests that end on a model turn, so close with a user nudge.
+          messages: [
+            ...history,
+            ...answerMessages,
+            { role: "user", content: "Suggest what I might do next." },
+          ],
+          tools: { suggest_followups },
+          toolChoice: { type: "tool", toolName: "suggest_followups" },
+          stopWhen: isStepCount(1),
+        });
+        writer.merge(toUIMessageStream({ stream: followups.stream, sendStart: false }));
+      },
     });
 
-    return createUIMessageStreamResponse({ stream: toUIMessageStream({ stream: result.stream }) });
+    return createUIMessageStreamResponse({ stream });
   } catch (err) {
     return errorResponse(err);
   }

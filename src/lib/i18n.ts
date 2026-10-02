@@ -76,6 +76,7 @@ type Strings = {
   retry: string;
   errGeneric: string;
   errLimit: string;
+  errBusy: string;
   toastSaved: string;
   toastRemoved: string;
   toastBooked: string;
@@ -162,6 +163,7 @@ const en: Strings = {
   retry: "Retry",
   errGeneric: "Something went wrong. Please try again.",
   errLimit: "Demo limit reached for this session.",
+  errBusy: "The concierge is busy right now. Please try again in a minute.",
   toastSaved: "Saved to My Trip",
   toastRemoved: "Removed from My Trip",
   toastBooked: "Booking request sent",
@@ -249,6 +251,7 @@ const es: Strings = {
   retry: "Reintentar",
   errGeneric: "Algo salió mal. Inténtalo de nuevo.",
   errLimit: "Se alcanzó el límite de la demo para esta sesión.",
+  errBusy: "El conserje está ocupado ahora mismo. Inténtalo de nuevo en un minuto.",
   toastSaved: "Guardado en Mi viaje",
   toastRemoved: "Eliminado de Mi viaje",
   toastBooked: "Solicitud de reserva enviada",
@@ -337,6 +340,7 @@ const fr: Strings = {
   retry: "Réessayer",
   errGeneric: "Une erreur est survenue. Veuillez réessayer.",
   errLimit: "Limite de la démo atteinte pour cette session.",
+  errBusy: "Le concierge est très sollicité. Réessayez dans une minute.",
   toastSaved: "Ajouté à Mon voyage",
   toastRemoved: "Retiré de Mon voyage",
   toastBooked: "Demande de réservation envoyée",
@@ -425,6 +429,7 @@ const de: Strings = {
   retry: "Erneut versuchen",
   errGeneric: "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.",
   errLimit: "Demo-Limit für diese Sitzung erreicht.",
+  errBusy: "Der Concierge ist gerade ausgelastet. Bitte versuchen Sie es in einer Minute erneut.",
   toastSaved: "In Meine Reise gespeichert",
   toastRemoved: "Aus Meine Reise entfernt",
   toastBooked: "Buchungsanfrage gesendet",
@@ -513,6 +518,7 @@ const ar: Strings = {
   retry: "إعادة المحاولة",
   errGeneric: "حدث خطأ ما. يرجى المحاولة مرة أخرى.",
   errLimit: "تم الوصول إلى حد العرض التجريبي لهذه الجلسة.",
+  errBusy: "المرشد مشغول حالياً. يرجى المحاولة مرة أخرى بعد دقيقة.",
   toastSaved: "تمت الإضافة إلى رحلتي",
   toastRemoved: "تمت الإزالة من رحلتي",
   toastBooked: "تم إرسال طلب الحجز",
@@ -601,6 +607,7 @@ const ur: Strings = {
   retry: "دوبارہ کوشش کریں",
   errGeneric: "کچھ غلط ہو گیا۔ براہ کرم دوبارہ کوشش کریں۔",
   errLimit: "اس سیشن کے لیے ڈیمو کی حد پوری ہو گئی۔",
+  errBusy: "کنسیئرج ابھی مصروف ہے۔ براہ کرم ایک منٹ بعد دوبارہ کوشش کریں۔",
   toastSaved: "میرے سفر میں محفوظ ہو گیا",
   toastRemoved: "میرے سفر سے ہٹا دیا گیا",
   toastBooked: "بکنگ کی درخواست بھیج دی گئی",
