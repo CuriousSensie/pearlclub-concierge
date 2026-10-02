@@ -11,7 +11,7 @@ export function SuggestionChips({ suggestions }: { suggestions: string[] }) {
           key={text}
           type="button"
           onClick={() => sendText(text)}
-          className="rounded-full border border-accent/40 bg-card px-3.5 py-1.5 text-sm text-accent"
+          className="rounded-full border border-accent/35 bg-card px-4 py-2 text-sm text-accent-text transition-colors hover:bg-accent/8"
         >
           {text}
         </button>

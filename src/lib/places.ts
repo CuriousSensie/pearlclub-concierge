@@ -26,6 +26,18 @@ const STOPWORDS = new Set([
   "something",
   "place",
   "places",
+  "hidden",
+  "gem",
+  "gems",
+  "best",
+  "good",
+  "great",
+  "local",
+  "nearby",
+  "spot",
+  "spots",
+  "recommend",
+  "find",
 ]);
 
 /** Keywords safe to embed in a PostgREST `or` filter. */
@@ -49,22 +61,32 @@ function shuffle<T>(items: T[]): T[] {
 }
 
 export async function searchPlaces(p: SearchParams): Promise<PlaceSummary[]> {
-  let q = getSupabase().from("places").select("*").eq("city_slug", p.city_slug);
-  if (p.category) q = q.eq("category", p.category);
-  if (p.price_max) q = q.lte("price_level", p.price_max);
-  if (p.tags?.length)
-    q = q.overlaps(
-      "tags",
-      p.tags.map((t) => t.toLowerCase().replace(/^#/, "")),
-    );
-  if (p.excludeIds?.length) q = q.not("id", "in", `(${p.excludeIds.join(",")})`);
-
   const kws = keywords(p.query);
-  if (kws.length) q = q.or(kws.map((k) => `search_text.ilike.%${k}%`).join(","));
 
-  const { data, error } = await q.limit(POOL_SIZE);
-  if (error) throw new Error(`search_places failed: ${error.message}`);
-  const rows = (data ?? []) as Place[];
+  const run = async (withKeywords: boolean, ignoreTags = false): Promise<Place[]> => {
+    let q = getSupabase().from("places").select("*").eq("city_slug", p.city_slug);
+    if (p.category) q = q.eq("category", p.category);
+    if (p.price_max) q = q.lte("price_level", p.price_max);
+    if (p.tags?.length && !ignoreTags)
+      q = q.overlaps(
+        "tags",
+        p.tags.map((t) => t.toLowerCase().replace(/^#/, "")),
+      );
+    if (p.excludeIds?.length) q = q.not("id", "in", `(${p.excludeIds.join(",")})`);
+    if (withKeywords && kws.length) q = q.or(kws.map((k) => `search_text.ilike.%${k}%`).join(","));
+    const { data, error } = await q.limit(POOL_SIZE);
+    if (error) throw new Error(`search_places failed: ${error.message}`);
+    return (data ?? []) as Place[];
+  };
+
+  // Keywords narrow the pool, but a thin match must not return nothing: top up from the
+  // unfiltered pool so vague queries ("something cozy") still surface real places.
+  let rows = await run(true);
+  if (!rows.length && p.tags?.length) rows = await run(true, true);
+  if (kws.length && rows.length < p.limit) {
+    const seen = new Set(rows.map((r) => r.id));
+    rows = [...rows, ...(await run(false)).filter((r) => !seen.has(r.id))];
+  }
 
   const interests = (p.interests ?? []).map((i) => i.toLowerCase());
   const scored = shuffle(rows).map((place) => {
@@ -114,4 +136,24 @@ export async function getSavedPlaces(sessionId: string): Promise<Place[]> {
     const place = row.places as unknown as Place | null;
     return place ? [place] : [];
   });
+}
+
+/**
+ * Resolves references the model may give as either an id or (mistakenly) an exact place name.
+ * Returns a map keyed by the reference as given; unresolved references are absent.
+ */
+export async function resolvePlaces(refs: string[], citySlug: string): Promise<Map<string, Place>> {
+  const resolved = new Map<string, Place>();
+  for (const pl of await getPlacesByIds(refs)) resolved.set(pl.id, pl);
+  const missing = refs.filter((r) => !resolved.has(r));
+  if (missing.length) {
+    const { data, error } = await getSupabase()
+      .from("places")
+      .select("*")
+      .eq("city_slug", citySlug)
+      .in("name", missing);
+    if (error) throw new Error(`place name lookup failed: ${error.message}`);
+    for (const pl of (data ?? []) as Place[]) resolved.set(pl.name, pl);
+  }
+  return resolved;
 }

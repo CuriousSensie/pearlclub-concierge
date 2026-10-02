@@ -49,8 +49,9 @@ export function MapCard({
 
         const hotelEl = document.createElement("div");
         hotelEl.className =
-          "h-6 w-6 rounded-md border-2 border-white bg-[var(--ink)] text-center text-xs leading-5 text-white shadow";
-        hotelEl.textContent = "🛎";
+          "h-6 w-6 rounded-md border-2 border-white bg-[var(--ink)] text-white shadow";
+        hotelEl.innerHTML =
+          '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin:3px"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M10 21v-6h4v6"/></svg>'; // static markup, no user input
         hotelEl.title = hotel.name;
         new maplibregl.Marker({ element: hotelEl }).setLngLat([hotel.lng, hotel.lat]).addTo(map);
 

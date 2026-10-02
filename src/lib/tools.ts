@@ -1,7 +1,7 @@
 import "server-only";
 import { tool } from "ai";
 import { z } from "zod";
-import { getPlacesByIds, searchPlaces } from "./places";
+import { getPlacesByIds, resolvePlaces, searchPlaces } from "./places";
 import { upsertProfile } from "./profile";
 import { COVERED_CITIES, type Hotel } from "./hotels";
 import type { Place, Profile, TimeSlot, UserLocation } from "@/types";
@@ -63,14 +63,28 @@ export function createTools(ctx: ToolContext) {
           .optional()
           .describe("Max price level, 1 (cheap) to 4 (splurge)"),
         tags: z
-          .array(z.string())
+          .array(
+            z.enum([
+              "budget",
+              "splurge",
+              "one-day",
+              "weekend",
+              "one-week",
+              "one-month",
+              "one-season",
+            ]),
+          )
           .optional()
-          .describe("Lowercase tags such as budget, splurge, one-day"),
+          .describe(
+            "Only for price feel (budget, splurge) or time needed. Do not use for themes; use query.",
+          ),
         query: z
           .string()
           .max(120)
           .optional()
-          .describe("Free-text keywords, e.g. 'cozy vegetarian natural wine'"),
+          .describe(
+            "Optional specific descriptors only (cuisine, dish, vibe), e.g. 'natural wine' or 'vegetarian'. Never generic words like 'hidden gems' or 'best'; use category and city for those.",
+          ),
         near_lat: z.number().min(-90).max(90).optional(),
         near_lng: z.number().min(-180).max(180).optional(),
         include_saved: z
@@ -195,7 +209,9 @@ export function createTools(ctx: ToolContext) {
           .array(
             z.object({
               time_slot: z.enum(TIME_SLOTS),
-              place_id: z.string(),
+              place_id: z
+                .string()
+                .describe("The `id` field from search_places results, not the name"),
               reason: z.string().max(240),
             }),
           )
@@ -203,18 +219,23 @@ export function createTools(ctx: ToolContext) {
           .max(6),
       }),
       execute: async ({ city_slug, date, theme, stops }) => {
-        const places = await getPlacesByIds(stops.map((s) => s.place_id));
-        const byId = new Map<string, Place>(places.map((p) => [p.id, p]));
-        const missing = stops.filter((s) => !byId.has(s.place_id)).map((s) => s.place_id);
+        const city = validCity(city_slug);
+        const found = await resolvePlaces(
+          stops.map((s) => s.place_id),
+          city,
+        );
+        const missing = stops.filter((s) => !found.has(s.place_id)).map((s) => s.place_id);
         if (missing.length)
-          return { error: `Unknown place ids: ${missing.join(", ")}. Use ids from search_places.` };
+          return {
+            error: `Unknown place ids: ${missing.join(", ")}. Use the id field from search_places.`,
+          };
         return {
-          city_slug: validCity(city_slug),
+          city_slug: city,
           date,
           theme,
           plan: stops.map((s) => ({
             time_slot: s.time_slot,
-            place: byId.get(s.place_id) as Place,
+            place: found.get(s.place_id) as Place,
             reason: s.reason,
           })),
         };

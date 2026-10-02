@@ -1,100 +1,147 @@
 "use client";
 
 import clsx from "clsx";
+import { ExternalLink, Heart } from "lucide-react";
 import { useApp } from "../AppContext";
+import { CategoryGlyph } from "../icons";
 import { formatDistance } from "@/lib/geo";
 import type { PlaceSummary } from "@/types";
 
-const CATEGORY_EMOJI: Record<string, string> = {
-  cafe: "☕",
-  bakery: "🥐",
-  breakfast: "🍳",
-  lunch: "🥗",
-  dinner: "🍽️",
-  bar: "🍸",
-  "outdoor-drinks": "🍹",
-  "arts-culture": "🎨",
-  market: "🧺",
-  stay: "🛏️",
-  shop: "🛍️",
-  other: "✨",
-};
-
 const label = (category: string): string => category.replace(/-/g, " ");
 
-export function PlaceCard({ place, compact = false }: { place: PlaceSummary; compact?: boolean }) {
+/** `card` is the carousel tile; `row` is the compact layout used in plans, details and the drawer. */
+export function PlaceCard({
+  place,
+  variant = "card",
+}: {
+  place: PlaceSummary;
+  variant?: "card" | "row";
+}) {
   const { s, savedIds, toggleSave, sendText } = useApp();
   const saved = savedIds.has(place.id);
-  const emoji = CATEGORY_EMOJI[place.category] ?? "✨";
-  const meta = [
-    label(place.category),
-    place.neighborhood,
-    place.price_level ? "$".repeat(place.price_level) : null,
-  ].filter(Boolean);
+  const row = variant === "row";
+  const meta = [label(place.category), place.price_level ? "$".repeat(place.price_level) : null]
+    .filter(Boolean)
+    .join(" · ");
 
-  return (
-    <article
+  const heart = (
+    <button
+      type="button"
+      aria-pressed={saved}
+      aria-label={saved ? s.saved : s.save}
+      onClick={() => void toggleSave(place)}
       className={clsx(
-        "flex flex-col overflow-hidden rounded-2xl border border-line bg-card shadow-[var(--shadow)]",
-        compact ? "w-full" : "w-[78vw] max-w-72 shrink-0 sm:w-full sm:max-w-none",
+        "inline-flex shrink-0 items-center justify-center rounded-full transition-colors",
+        row ? "size-10" : "absolute end-2 top-2 size-10 bg-paper/90 backdrop-blur",
+        saved ? "text-accent-text" : "text-ink",
       )}
     >
-      <div className="relative aspect-[4/3] bg-gradient-to-br from-accent/30 to-line">
-        {place.image_url ? (
-          // eslint-disable-next-line @next/next/no-img-element -- remote CMS images, no optimizer needed
-          <img
-            src={place.image_url}
-            alt={place.name}
-            loading="lazy"
-            className="h-full w-full object-cover"
+      <Heart
+        aria-hidden
+        className="size-5"
+        fill={saved ? "currentColor" : "none"}
+        strokeWidth={1.75}
+      />
+    </button>
+  );
+
+  const image = (
+    <div
+      className={clsx(
+        "relative shrink-0 overflow-hidden bg-gradient-to-br from-accent/25 to-line",
+        row ? "size-24 rounded-xl" : "aspect-[16/10]",
+      )}
+    >
+      {place.image_url ? (
+        // eslint-disable-next-line @next/next/no-img-element -- remote CMS images, no optimizer needed
+        <img
+          src={place.image_url}
+          alt={place.name}
+          loading="lazy"
+          className="size-full object-cover"
+        />
+      ) : (
+        <div className="flex size-full items-center justify-center text-accent-text">
+          <CategoryGlyph
+            category={place.category}
+            aria-hidden
+            className="size-8"
+            strokeWidth={1.5}
           />
-        ) : (
-          <div className="flex h-full items-center justify-center text-4xl" aria-hidden>
-            {emoji}
+        </div>
+      )}
+      {!row && place.distance_km != null && (
+        <span className="absolute bottom-2 start-2 rounded-full bg-black/65 px-2.5 py-1 text-xs font-medium text-white">
+          {formatDistance(place.distance_km)} {s.away}
+        </span>
+      )}
+      {!row && heart}
+    </div>
+  );
+
+  const actions = (
+    <div className="flex items-center gap-2">
+      <button
+        type="button"
+        onClick={() => sendText(`I'd like to book ${place.name}`)}
+        className="h-9 rounded-full bg-accent px-4 text-sm font-medium text-accent-ink"
+      >
+        {s.book}
+      </button>
+      <a
+        href={place.pearlclub_url}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label={s.viewOnPearl}
+        title={s.viewOnPearl}
+        className={clsx(
+          "inline-flex h-9 items-center gap-1.5 text-sm font-medium text-accent-text underline-offset-4 hover:underline",
+          row && "w-9 justify-center rounded-full border border-line hover:no-underline",
+        )}
+      >
+        {!row && s.viewOnPearl}
+        <ExternalLink aria-hidden className="size-3.5 rtl:-scale-x-100" />
+      </a>
+    </div>
+  );
+
+  if (row) {
+    return (
+      <article className="flex gap-3 rounded-2xl border border-line bg-card p-2.5">
+        {image}
+        <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+          <div className="flex items-start justify-between gap-1">
+            <div className="min-w-0">
+              <h3 className="font-display text-xl leading-tight">{place.name}</h3>
+              <p className="mt-0.5 flex items-center gap-1.5 text-xs capitalize text-muted">
+                <CategoryGlyph category={place.category} aria-hidden className="size-3.5" />
+                {meta}
+                {place.distance_km != null && ` · ${formatDistance(place.distance_km)}`}
+              </p>
+            </div>
+            {heart}
           </div>
-        )}
-        {place.distance_km != null && (
-          <span className="absolute start-2 top-2 rounded-full bg-black/60 px-2 py-0.5 text-xs text-white">
-            {formatDistance(place.distance_km)} {s.away}
-          </span>
-        )}
-      </div>
-      <div className="flex flex-1 flex-col gap-2 p-3.5">
+          {actions}
+        </div>
+      </article>
+    );
+  }
+
+  return (
+    <article className="flex w-[80vw] max-w-72 shrink-0 flex-col overflow-hidden rounded-2xl border border-line bg-card sm:w-full sm:max-w-none">
+      {image}
+      <div className="flex flex-1 flex-col gap-2 p-4">
         <div>
-          <h3 className="font-display text-xl leading-tight">{place.name}</h3>
-          <p className="mt-0.5 text-xs capitalize text-muted">{meta.join(" · ")}</p>
+          <h3 className="font-display text-[22px] leading-tight">{place.name}</h3>
+          <p className="mt-1 flex items-center gap-1.5 text-xs capitalize text-muted">
+            <CategoryGlyph category={place.category} aria-hidden className="size-3.5" />
+            {meta}
+          </p>
         </div>
         {place.description && (
-          <p className="line-clamp-2 text-sm text-ink/80">{place.description}</p>
+          <p className="line-clamp-3 text-sm leading-relaxed text-ink/80">{place.description}</p>
         )}
-        <div className="mt-auto flex flex-wrap items-center gap-2 pt-1">
-          <button
-            type="button"
-            aria-pressed={saved}
-            onClick={() => void toggleSave(place)}
-            className={clsx(
-              "h-9 rounded-full border px-3.5 text-sm font-medium",
-              saved ? "border-accent bg-accent text-accent-ink" : "border-line text-ink",
-            )}
-          >
-            {saved ? "♥" : "♡"} {saved ? s.saved : s.save}
-          </button>
-          <button
-            type="button"
-            onClick={() => sendText(`I'd like to book ${place.name}`)}
-            className="h-9 rounded-full border border-line px-3.5 text-sm font-medium"
-          >
-            {s.book}
-          </button>
-          <a
-            href={place.pearlclub_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="ms-auto text-sm font-medium text-accent underline"
-          >
-            {s.viewOnPearl} ↗
-          </a>
-        </div>
+        <div className="mt-auto pt-1">{actions}</div>
       </div>
     </article>
   );

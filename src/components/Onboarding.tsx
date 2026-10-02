@@ -33,7 +33,7 @@ function ChipRow<T extends string>({
             aria-pressed={selected(o)}
             onClick={() => onToggle(o)}
             className={clsx(
-              "rounded-full border px-3 py-1.5 text-sm transition-colors",
+              "rounded-full border px-3.5 py-2 text-sm transition-colors",
               selected(o)
                 ? "border-accent bg-accent text-accent-ink"
                 : "border-line bg-card text-ink",
@@ -98,7 +98,7 @@ export function Onboarding({
         <button
           type="button"
           onClick={() => setEditing(true)}
-          className="font-medium text-accent underline"
+          className="font-medium text-accent-text underline"
         >
           {s.onbEdit}
         </button>
@@ -111,7 +111,7 @@ export function Onboarding({
   return (
     <section
       aria-label={s.onbTitle}
-      className="rise space-y-4 rounded-2xl border border-line bg-card p-4 shadow-[var(--shadow)]"
+      className="rise space-y-4 rounded-2xl border border-line bg-card p-4"
     >
       <h2 className="font-display text-lg">{s.onbTitle}</h2>
       <ChipRow

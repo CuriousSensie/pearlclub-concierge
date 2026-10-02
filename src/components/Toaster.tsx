@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
+import { CircleAlert, CircleCheck } from "lucide-react";
 import { nanoid } from "nanoid";
 import clsx from "clsx";
 
@@ -30,18 +31,23 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       <div
         aria-live="polite"
         role="status"
-        className="pointer-events-none fixed inset-x-0 top-3 z-[60] flex flex-col items-center gap-2 px-4"
+        className="pointer-events-none fixed inset-x-0 top-[max(0.75rem,env(safe-area-inset-top))] z-[60] flex flex-col items-center gap-2 px-4"
       >
         {toasts.map((t) => (
           <div
             key={t.id}
             className={clsx(
-              "pointer-events-auto max-w-sm rounded-full px-4 py-2 text-sm shadow-lg",
+              "pointer-events-auto max-w-sm flex items-center gap-2 rounded-full px-4 py-2.5 text-sm shadow-[var(--pop)]",
               t.kind === "error" && "bg-red-700 text-white",
               t.kind === "success" && "bg-[var(--ink)] text-[var(--paper)]",
               t.kind === "info" && "bg-[var(--card)] text-[var(--ink)] ring-1 ring-[var(--line)]",
             )}
           >
+            {t.kind === "error" ? (
+              <CircleAlert aria-hidden className="size-4 shrink-0" />
+            ) : (
+              <CircleCheck aria-hidden className="size-4 shrink-0" />
+            )}
             {t.message}
           </div>
         ))}

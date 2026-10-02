@@ -74,7 +74,7 @@ export function TripDrawer({
         aria-modal="true"
         aria-label={s.myTrip}
         className={clsx(
-          "absolute inset-y-0 end-0 flex w-full max-w-md flex-col bg-paper shadow-2xl transition-transform duration-300",
+          "absolute inset-y-0 end-0 flex w-full max-w-md flex-col bg-paper shadow-[var(--pop)] transition-transform duration-300",
           open ? "translate-x-0" : "ltr:translate-x-full rtl:-translate-x-full",
         )}
       >
@@ -110,7 +110,7 @@ export function TripDrawer({
           {failed && <p className="text-sm text-red-600">{s.errGeneric}</p>}
           {tab === "saved" &&
             (places.length ? (
-              places.map((p) => <PlaceCard key={p.id} place={p} compact />)
+              places.map((p) => <PlaceCard key={p.id} place={p} variant="row" />)
             ) : (
               <p className="py-10 text-center text-sm text-muted">{s.emptySaved}</p>
             ))}

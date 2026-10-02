@@ -27,7 +27,7 @@ const commonServices = (airport: string, spaPrice: string): HotelService[] => [
     description: `Private car to or from ${airport}.`,
     price: "from €65",
     requiresTime: true,
-    icon: "🚗",
+    icon: "car",
   },
   {
     id: "spa-treatment",
@@ -35,7 +35,7 @@ const commonServices = (airport: string, spaPrice: string): HotelService[] => [
     description: "60-minute massage or facial in our spa.",
     price: spaPrice,
     requiresTime: true,
-    icon: "💆",
+    icon: "spa",
   },
   {
     id: "late-checkout",
@@ -43,7 +43,7 @@ const commonServices = (airport: string, spaPrice: string): HotelService[] => [
     description: "Keep your room until 4 pm, subject to availability.",
     price: "from €40",
     requiresTime: false,
-    icon: "🕓",
+    icon: "clock",
   },
   {
     id: "room-service-breakfast",
@@ -51,7 +51,7 @@ const commonServices = (airport: string, spaPrice: string): HotelService[] => [
     description: "Continental or full breakfast delivered to your room.",
     price: "from €28",
     requiresTime: true,
-    icon: "🥐",
+    icon: "breakfast",
   },
   {
     id: "restaurant-reservation",
@@ -59,7 +59,7 @@ const commonServices = (airport: string, spaPrice: string): HotelService[] => [
     description: "We secure a table at a Pearl Club favourite for you.",
     price: "Complimentary",
     requiresTime: true,
-    icon: "🍽️",
+    icon: "dining",
   },
   {
     id: "private-walking-tour",
@@ -67,7 +67,7 @@ const commonServices = (airport: string, spaPrice: string): HotelService[] => [
     description: "Two hours with a local guide, tailored to your interests.",
     price: "from €120",
     requiresTime: true,
-    icon: "🚶",
+    icon: "walk",
   },
 ];
 

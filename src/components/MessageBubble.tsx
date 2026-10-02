@@ -76,7 +76,12 @@ function Markdown({ text }: { text: string }) {
 }
 
 function Skeleton() {
-  return <div aria-hidden className="h-40 w-full animate-pulse rounded-2xl bg-line/70" />;
+  return (
+    <div
+      aria-hidden
+      className="h-56 w-4/5 animate-pulse rounded-2xl bg-line/60 motion-reduce:animate-none"
+    />
+  );
 }
 
 type ToolPart = { type: string; state?: string; output?: unknown; errorText?: string };
@@ -108,7 +113,7 @@ function ToolView({ part }: { part: ToolPart }) {
     }
     case "get_place_details": {
       const place = out.place as Place | undefined;
-      return place ? <PlaceCard place={place} compact /> : null;
+      return place ? <PlaceCard place={place} variant="row" /> : null;
     }
     case "show_map": {
       const places = (out.places ?? []) as Place[];
@@ -143,7 +148,7 @@ export function MessageBubble({ message }: { message: UIMessage }) {
     const text = message.parts.map((p) => (p.type === "text" ? p.text : "")).join("");
     return (
       <div className="rise flex justify-end">
-        <p className="max-w-[85%] whitespace-pre-wrap rounded-2xl rounded-ee-md bg-accent px-4 py-2.5 text-[15px] text-accent-ink">
+        <p className="max-w-[85%] whitespace-pre-wrap rounded-3xl rounded-ee-lg bg-accent px-4 py-2.5 text-[15px] leading-snug text-accent-ink">
           {text}
         </p>
       </div>
@@ -155,10 +160,7 @@ export function MessageBubble({ message }: { message: UIMessage }) {
       {message.parts.map((part, i) => {
         if (part.type === "text") {
           return part.text.trim() ? (
-            <div
-              key={i}
-              className="max-w-[92%] rounded-2xl rounded-es-md border border-line bg-card px-4 py-2.5 text-[15px] leading-relaxed"
-            >
+            <div key={i} className="max-w-[62ch] text-[16px] leading-[1.6]">
               <Markdown text={part.text} />
             </div>
           ) : null;

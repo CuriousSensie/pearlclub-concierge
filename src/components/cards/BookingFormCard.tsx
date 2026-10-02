@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import { CircleCheck } from "lucide-react";
 import { useApp } from "../AppContext";
 import { useToast } from "../Toaster";
 import { fill } from "@/lib/i18n";
@@ -25,7 +26,7 @@ function tomorrow(): string {
   return d.toLocaleDateString("en-CA");
 }
 
-const inputCls = "h-10 w-full rounded-xl border border-line bg-paper px-3 text-sm";
+const inputCls = "h-11 w-full rounded-xl border border-line bg-paper px-3 text-[15px]";
 
 export function BookingFormCard({ form }: { form: BookingFormData }) {
   const { s, hotel, onBooked } = useApp();
@@ -95,7 +96,10 @@ export function BookingFormCard({ form }: { form: BookingFormData }) {
   if (status === "sent") {
     return (
       <div role="status" className="rise rounded-2xl border border-accent/40 bg-card p-4">
-        <p className="font-display text-xl text-accent">{s.fSent}</p>
+        <p className="flex items-center gap-2 font-display text-2xl text-accent-text">
+          <CircleCheck aria-hidden className="size-6" strokeWidth={1.75} />
+          {s.fSent}
+        </p>
         <p className="mt-1 text-sm">
           {form.item_name} · {values.date}
           {values.time && ` · ${values.time}`} · {values.party_size}
@@ -113,14 +117,12 @@ export function BookingFormCard({ form }: { form: BookingFormData }) {
   );
 
   return (
-    <form
-      onSubmit={submit}
-      className="space-y-3 rounded-2xl border border-line bg-card p-4 shadow-[var(--shadow)]"
-    >
+    <form onSubmit={submit} className="space-y-3.5 rounded-2xl border border-line bg-card p-4">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-wide text-accent">{s.bookTitle}</p>
-        <h3 className="font-display text-xl leading-tight">{form.item_name}</h3>
-        <p className="text-xs text-muted">{hotel.name}</p>
+        <h3 className="font-display text-2xl leading-tight">{form.item_name}</h3>
+        <p className="mt-0.5 text-xs text-muted">
+          {s.bookTitle} · {hotel.name}
+        </p>
       </div>
       <div className="grid grid-cols-2 gap-3">
         {field(

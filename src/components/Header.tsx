@@ -1,5 +1,6 @@
 "use client";
 
+import { Luggage } from "lucide-react";
 import { LanguageSelector } from "./LanguageSelector";
 import { useApp } from "./AppContext";
 import type { Language } from "@/types";
@@ -16,27 +17,26 @@ export function Header({
   const { hotel, lang, s } = useApp();
   return (
     <header className="sticky top-0 z-30 border-b border-line bg-paper/90 pt-[env(safe-area-inset-top)] backdrop-blur">
-      <div className="mx-auto flex max-w-3xl flex-wrap items-center gap-x-2 gap-y-2 px-4 py-2.5">
-        <div className="min-w-0 basis-full sm:basis-0 sm:flex-1">
-          <div className="flex items-center gap-2">
-            <h1 className="truncate font-display text-xl leading-none">{hotel.name}</h1>
-            <span className="shrink-0 rounded-full bg-accent/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-accent">
-              {s.demo}
-            </span>
-          </div>
-          <p className="mt-1 truncate text-xs text-muted">{s.poweredBy}</p>
+      <div className="mx-auto flex max-w-3xl items-center gap-2 px-4 py-2.5">
+        <div className="min-w-0 flex-1">
+          <h1 className="truncate font-display text-xl leading-none sm:text-[22px]">
+            {hotel.name}
+          </h1>
+          <p className="mt-1.5 truncate text-[11px] text-muted">
+            {s.demo} · {s.poweredBy}
+          </p>
         </div>
-        <div className="ms-auto sm:ms-0">
-          <LanguageSelector value={lang} label={s.language} onChange={onLanguage} />
-        </div>
+        <LanguageSelector value={lang} label={s.language} onChange={onLanguage} />
         <button
           type="button"
           onClick={onOpenTrip}
-          className="relative h-9 shrink-0 rounded-full bg-accent px-3.5 text-sm font-medium text-accent-ink"
+          aria-label={tripCount ? `${s.myTrip} (${tripCount})` : s.myTrip}
+          className="relative inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-full bg-accent px-3 text-sm font-medium text-accent-ink sm:px-4"
         >
-          {s.myTrip}
+          <Luggage aria-hidden className="size-[18px]" />
+          <span className="hidden sm:inline">{s.myTrip}</span>
           {tripCount > 0 && (
-            <span className="ms-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-white/25 px-1 text-xs">
+            <span className="absolute -end-1 -top-1 inline-flex size-5 items-center justify-center rounded-full bg-ink text-[11px] font-semibold text-paper">
               {tripCount}
             </span>
           )}

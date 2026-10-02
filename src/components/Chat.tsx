@@ -2,7 +2,8 @@
 
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
-import { useEffect, useRef, useState, type CSSProperties, type FormEvent } from "react";
+import { useEffect, useState, type CSSProperties, type FormEvent } from "react";
+import { ArrowUp } from "lucide-react";
 import { AppProvider, type AppState } from "./AppContext";
 import { Header } from "./Header";
 import { MessageBubble, getSuggestions } from "./MessageBubble";
@@ -42,7 +43,6 @@ export function Chat({ hotelId }: { hotelId: string }) {
   const [bookingsVersion, setBookingsVersion] = useState(0);
   const [bookingCount, setBookingCount] = useState(0);
   const [input, setInput] = useState("");
-  const bottomRef = useRef<HTMLDivElement>(null);
 
   const { messages, sendMessage, status, error, regenerate, clearError } = useChat({ transport });
   const busy = status === "submitted" || status === "streaming";
@@ -83,10 +83,14 @@ export function Chat({ hotelId }: { hotelId: string }) {
     document.documentElement.dir = isRTL(lang) ? "rtl" : "ltr";
   }, [lang]);
 
+  // Keep the newest question at the top so the answer reads top-down, cards first.
+  const lastUserId = [...messages].reverse().find((m) => m.role === "user")?.id;
   useEffect(() => {
-    if (messages.length === 0) return;
-    bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-  }, [messages, status]);
+    if (!lastUserId) return;
+    document
+      .getElementById(`msg-${lastUserId}`)
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [lastUserId]);
 
   const requestBody = { hotelId: hotel.id, language: lang, userLocation };
 
@@ -232,9 +236,21 @@ export function Chat({ hotelId }: { hotelId: string }) {
           ) : (
             <div className="space-y-4 py-4" aria-live="polite">
               {messages.map((m) => (
-                <MessageBubble key={m.id} message={m} />
+                <div key={m.id} id={`msg-${m.id}`} className="scroll-mt-20">
+                  <MessageBubble message={m} />
+                </div>
               ))}
-              {status === "submitted" && <p className="text-sm text-muted">{s.thinking}</p>}
+              {status === "submitted" && (
+                <div role="status" className="flex items-center gap-2.5 py-1">
+                  <span aria-hidden className="pearl size-4 rounded-full" />
+                  <span aria-hidden className="dot-pulse">
+                    <span />
+                    <span />
+                    <span />
+                  </span>
+                  <span className="sr-only">{s.thinking}</span>
+                </div>
+              )}
               {suggestions.length > 0 && <SuggestionChips suggestions={suggestions} />}
               {error && (
                 <div
@@ -255,7 +271,8 @@ export function Chat({ hotelId }: { hotelId: string }) {
               )}
             </div>
           )}
-          <div ref={bottomRef} />
+          {/* Room below the answer so the newest question can sit at the top of the viewport. */}
+          {messages.length > 0 && <div aria-hidden className="h-[45vh]" />}
         </main>
 
         <form
@@ -263,23 +280,24 @@ export function Chat({ hotelId }: { hotelId: string }) {
           className="sticky bottom-0 z-20 border-t border-line bg-paper/95 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur"
         >
           <div className="mx-auto flex max-w-3xl items-center gap-2 px-4">
-            <label className="min-w-0 flex-1">
+            <label className="relative block min-w-0 flex-1">
               <span className="sr-only">{s.placeholder}</span>
               <input
                 value={input}
                 maxLength={MAX_INPUT}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder={s.placeholder}
-                className="h-11 w-full rounded-full border border-line bg-card px-4 text-[15px]"
+                className="h-12 w-full rounded-full border border-line bg-card ps-5 pe-14 text-base"
               />
+              <button
+                type="submit"
+                aria-label={s.send}
+                disabled={busy || !input.trim()}
+                className="absolute end-1.5 top-1.5 inline-flex size-9 items-center justify-center rounded-full bg-accent text-accent-ink transition-opacity disabled:opacity-30"
+              >
+                <ArrowUp aria-hidden className="size-5" />
+              </button>
             </label>
-            <button
-              type="submit"
-              disabled={busy || !input.trim()}
-              className="h-11 shrink-0 rounded-full bg-accent px-5 text-sm font-medium text-accent-ink disabled:opacity-40"
-            >
-              {s.send}
-            </button>
           </div>
         </form>
 
