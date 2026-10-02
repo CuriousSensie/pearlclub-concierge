@@ -1,6 +1,6 @@
 "use client";
 
-import { BookmarkPlus, Footprints, Shuffle } from "lucide-react";
+import { BookmarkPlus, CloudRain, Footprints, Shuffle } from "lucide-react";
 import { useApp } from "../AppContext";
 import { MapCard } from "./MapCard";
 import { PlaceCard } from "./PlaceCard";
@@ -19,10 +19,12 @@ export function DayPlanCard({
   plan,
   theme,
   date,
+  rainy,
 }: {
   plan: DayPlanStop[];
   theme?: string;
   date?: string;
+  rainy?: boolean;
 }) {
   const { s, lang, saveMany, sendText } = useApp();
   const slotLabel: Record<TimeSlot, string> = {
@@ -38,6 +40,12 @@ export function DayPlanCard({
         <h3 className="font-display text-2xl">
           {[theme, date && formatDate(date, lang)].filter(Boolean).join(" · ")}
         </h3>
+      )}
+      {rainy && (
+        <p className="flex items-center gap-2 text-sm text-muted">
+          <CloudRain aria-hidden className="size-4" strokeWidth={1.75} />
+          {s.rainNote}
+        </p>
       )}
       <ol className="space-y-5">
         {plan.map((stop, i) => (

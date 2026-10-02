@@ -149,6 +149,7 @@ function ToolView({ part }: { part: ToolPart }) {
       return (
         <DayPlanCard
           plan={(out.plan ?? []) as DayPlanStop[]}
+          rainy={out.rainy === true}
           theme={out.theme as string | undefined}
           date={out.date as string | undefined}
         />

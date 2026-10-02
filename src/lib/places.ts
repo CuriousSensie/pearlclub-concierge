@@ -5,6 +5,10 @@ import { getSupabase } from "./supabase";
 import { haversineKm } from "./geo";
 import type { Place, PlaceSummary } from "@/types";
 
+/** Every Place field except the (large) embedding vector, which must never leave the database. */
+export const PLACE_COLUMNS =
+  "id,name,city,city_slug,category,neighborhood,price_level,tags,description,lat,lng,image_url,pearlclub_url,curator,curator_slug,curator_image,curator_type";
+
 export type SearchParams = {
   city_slug: string;
   category?: string;
@@ -66,7 +70,7 @@ export async function searchPlaces(p: SearchParams): Promise<PlaceSummary[]> {
   const kws = keywords(p.query);
 
   const run = async (withKeywords: boolean, ignoreTags = false): Promise<Place[]> => {
-    let q = getSupabase().from("places").select("*").eq("city_slug", p.city_slug);
+    let q = getSupabase().from("places").select(PLACE_COLUMNS).eq("city_slug", p.city_slug);
     if (p.category) q = q.eq("category", p.category);
     if (p.price_max) q = q.lte("price_level", p.price_max);
     if (p.tags?.length && !ignoreTags)
@@ -134,17 +138,20 @@ export async function searchPlaces(p: SearchParams): Promise<PlaceSummary[]> {
 }
 
 const EMBED_MODEL = "text-embedding-3-small";
-const embeddingCache = new Map<string, number[]>();
+// Cache the promise, not the vector, so concurrent searches for the same text share one API call.
+const embeddingCache = new Map<string, Promise<number[]>>();
 let vectorsRetryAt = 0; // after a failure, skip vectors for a minute (e.g. migration not applied yet)
 
-async function embedQuery(query: string): Promise<number[]> {
+function embedQuery(query: string): Promise<number[]> {
   const key = query.trim().toLowerCase();
-  const hit = embeddingCache.get(key);
-  if (hit) return hit;
-  const { embedding } = await embed({ model: openai.embedding(EMBED_MODEL), value: key });
-  if (embeddingCache.size > 200) embeddingCache.clear();
-  embeddingCache.set(key, embedding);
-  return embedding;
+  let pending = embeddingCache.get(key);
+  if (!pending) {
+    if (embeddingCache.size > 200) embeddingCache.clear();
+    pending = embed({ model: openai.embedding(EMBED_MODEL), value: key }).then((r) => r.embedding);
+    pending.catch(() => embeddingCache.delete(key)); // don't cache failures
+    embeddingCache.set(key, pending);
+  }
+  return pending;
 }
 
 /** Top semantic matches (id -> cosine similarity), or null if vector search isn't available. */
@@ -176,7 +183,7 @@ async function vectorMatches(p: SearchParams): Promise<Map<string, number> | nul
 
 export async function getPlacesByIds(ids: string[]): Promise<Place[]> {
   if (!ids.length) return [];
-  const { data, error } = await getSupabase().from("places").select("*").in("id", ids);
+  const { data, error } = await getSupabase().from("places").select(PLACE_COLUMNS).in("id", ids);
   if (error) throw new Error(`place lookup failed: ${error.message}`);
   const byId = new Map((data as Place[]).map((pl) => [pl.id, pl]));
   // Preserve the requested order.
@@ -186,7 +193,7 @@ export async function getPlacesByIds(ids: string[]): Promise<Place[]> {
 export async function getSavedPlaces(sessionId: string): Promise<Place[]> {
   const { data, error } = await getSupabase()
     .from("saved_places")
-    .select("created_at, places(*)")
+    .select(`created_at, places(${PLACE_COLUMNS})`)
     .eq("session_id", sessionId)
     .order("created_at", { ascending: false });
   if (error) throw new Error(`saved places lookup failed: ${error.message}`);
@@ -207,7 +214,7 @@ export async function resolvePlaces(refs: string[], citySlug: string): Promise<M
   if (missing.length) {
     const { data, error } = await getSupabase()
       .from("places")
-      .select("*")
+      .select(PLACE_COLUMNS)
       .eq("city_slug", citySlug)
       .in("name", missing);
     if (error) throw new Error(`place name lookup failed: ${error.message}`);

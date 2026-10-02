@@ -78,6 +78,7 @@ type Strings = {
   errLimit: string;
   errBusy: string;
   planning: string;
+  rainNote: string;
   recBy: string; // {name}
   walkMin: string; // {n}
   swap: string;
@@ -179,6 +180,7 @@ const en: Strings = {
   errLimit: "Demo limit reached for this session.",
   errBusy: "The concierge is busy right now. Please try again in a minute.",
   planning: "Planning your day…",
+  rainNote: "Rain is likely, so the afternoon favours indoor spots.",
   recBy: "Recommended by {name}",
   walkMin: "{n} min walk",
   swap: "Swap",
@@ -300,6 +302,7 @@ const es: Strings = {
   errLimit: "Se alcanzó el límite de la demo para esta sesión.",
   errBusy: "El conserje está ocupado ahora mismo. Inténtalo de nuevo en un minuto.",
   planning: "Planificando tu día…",
+  rainNote: "Es probable que llueva, así que la tarde incluye lugares cubiertos.",
   recBy: "Recomendado por {name}",
   walkMin: "{n} min a pie",
   swap: "Cambiar",
@@ -422,6 +425,7 @@ const fr: Strings = {
   errLimit: "Limite de la démo atteinte pour cette session.",
   errBusy: "Le concierge est très sollicité. Réessayez dans une minute.",
   planning: "Préparation de votre journée…",
+  rainNote: "Il risque de pleuvoir, l'après-midi privilégie donc les lieux couverts.",
   recBy: "Recommandé par {name}",
   walkMin: "{n} min à pied",
   swap: "Changer",
@@ -544,6 +548,7 @@ const de: Strings = {
   errLimit: "Demo-Limit für diese Sitzung erreicht.",
   errBusy: "Der Concierge ist gerade ausgelastet. Bitte versuchen Sie es in einer Minute erneut.",
   planning: "Ihr Tag wird geplant…",
+  rainNote: "Es wird wohl regnen, deshalb stehen am Nachmittag Orte drinnen im Fokus.",
   recBy: "Empfohlen von {name}",
   walkMin: "{n} Min. zu Fuß",
   swap: "Tauschen",
@@ -666,6 +671,7 @@ const ar: Strings = {
   errLimit: "تم الوصول إلى حد العرض التجريبي لهذه الجلسة.",
   errBusy: "المرشد مشغول حالياً. يرجى المحاولة مرة أخرى بعد دقيقة.",
   planning: "جارٍ تخطيط يومك…",
+  rainNote: "من المتوقع هطول أمطار، لذا تركّز فترة بعد الظهر على الأماكن المغلقة.",
   recBy: "بتوصية من {name}",
   walkMin: "{n} دقيقة مشياً",
   swap: "استبدال",
@@ -781,6 +787,7 @@ const ur: Strings = {
   errLimit: "اس سیشن کے لیے ڈیمو کی حد پوری ہو گئی۔",
   errBusy: "کنسیئرج ابھی مصروف ہے۔ براہ کرم ایک منٹ بعد دوبارہ کوشش کریں۔",
   planning: "آپ کا دن پلان کیا جا رہا ہے…",
+  rainNote: "بارش کا امکان ہے، اس لیے سہ پہر میں اندرونی مقامات شامل ہیں۔",
   recBy: "{name} کی سفارش",
   walkMin: "{n} منٹ پیدل",
   swap: "تبدیل کریں",

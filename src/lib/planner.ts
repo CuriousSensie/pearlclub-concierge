@@ -64,29 +64,43 @@ export async function buildPlan(opts: {
   const used = new Set<string>([...(opts.excludeIds ?? []), ...keptPlaces.keys()]);
   const categories = SLOT_CATEGORIES(opts.rainy);
 
+  // One parallel round of lookups for every slot (anchored at the hotel), then chain the picks
+  // in memory so each stop is the closest candidate to the previous one.
+  const pools = new Map<TimeSlot, PlaceSummary[]>();
+  await Promise.all(
+    slots
+      .filter((slot) => !keptBySlot.get(slot))
+      .map(async (slot) => {
+        const perCategory = await Promise.all(
+          categories[slot].map((category) =>
+            searchPlaces({
+              city_slug: opts.citySlug,
+              category,
+              query: opts.vibe,
+              near: { lat: opts.hotel.lat, lng: opts.hotel.lng },
+              limit: 8,
+              interests: opts.interests,
+              excludeIds: [...used],
+            }),
+          ),
+        );
+        pools.set(slot, perCategory.flat());
+      }),
+  );
+
   let anchor = { lat: opts.hotel.lat, lng: opts.hotel.lng };
   const stops: PlannedStop[] = [];
   for (const slot of slots) {
     let chosen: PlaceSummary | undefined = keptBySlot.get(slot);
     if (!chosen) {
-      const pools = await Promise.all(
-        categories[slot].map((category) =>
-          searchPlaces({
-            city_slug: opts.citySlug,
-            category,
-            query: opts.vibe,
-            near: anchor,
-            limit: 4,
-            interests: opts.interests,
-            excludeIds: [...used],
-          }),
-        ),
-      );
-      // Best-ranked candidate overall: nearest to where the guest will be, after relevance.
-      chosen = pools
-        .flat()
+      const from = anchor;
+      chosen = (pools.get(slot) ?? [])
         .filter((p) => p.lat != null && p.lng != null && !used.has(p.id))
-        .sort((a, b) => (a.distance_km ?? Infinity) - (b.distance_km ?? Infinity))[0];
+        .sort(
+          (a, b) =>
+            haversineKm(from.lat, from.lng, a.lat as number, a.lng as number) -
+            haversineKm(from.lat, from.lng, b.lat as number, b.lng as number),
+        )[0];
     }
     if (!chosen) continue;
     used.add(chosen.id);

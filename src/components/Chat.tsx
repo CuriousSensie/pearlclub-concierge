@@ -12,13 +12,20 @@ import { TripDrawer } from "./TripDrawer";
 import { WelcomeScreen } from "./WelcomeScreen";
 import { useToast } from "./Toaster";
 import { getHotel } from "@/lib/hotels";
+import { slimMessages } from "@/lib/slimMessages";
 import { readLocalProfile, writeLocalProfile } from "@/lib/localProfile";
 import { fill, isLanguage, isRTL, t } from "@/lib/i18n";
 import { sessionHeaders } from "@/lib/session";
 import type { Booking, Language, Place, Profile, UserLocation } from "@/types";
 
 // Session and request body are resolved per send, so one transport serves every render.
-const transport = new DefaultChatTransport({ api: "/api/chat", headers: () => sessionHeaders() });
+const transport = new DefaultChatTransport({
+  api: "/api/chat",
+  headers: () => sessionHeaders(),
+  prepareSendMessagesRequest: ({ messages, body }) => ({
+    body: { ...body, messages: slimMessages(messages) },
+  }),
+});
 
 const LANG_KEY = "pc_language";
 const MAX_INPUT = 1000;

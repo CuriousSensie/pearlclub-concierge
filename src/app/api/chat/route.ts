@@ -3,6 +3,7 @@ import {
   convertToModelMessages,
   createUIMessageStream,
   createUIMessageStreamResponse,
+  hasToolCall,
   isStepCount,
   streamText,
   toUIMessageStream,
@@ -138,7 +139,8 @@ export async function POST(req: Request): Promise<Response> {
           }),
           messages: history,
           tools: mainTools,
-          stopWhen: isStepCount(6),
+          // The plan and services cards are the answer; skip the extra model turn that would only re-describe them.
+          stopWhen: [hasToolCall("plan_day"), hasToolCall("get_hotel_services"), isStepCount(6)],
         });
         writer.merge(
           toUIMessageStream({ stream: answer.stream, sendStart: false, sendFinish: false }),

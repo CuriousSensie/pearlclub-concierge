@@ -255,9 +255,7 @@ export function createTools(ctx: ToolContext) {
           city_slug: city,
           date,
           theme,
-          weather_note: ctx.rainy
-            ? "Rain is expected, so the afternoon favours indoor places."
-            : undefined,
+          rainy: ctx.rainy,
           plan,
         };
       },
@@ -267,7 +265,7 @@ export function createTools(ctx: ToolContext) {
           "error" in output
             ? output
             : {
-                weather_note: output.weather_note,
+                rainy_day: output.rainy,
                 plan: output.plan.map((st) => ({
                   slot: st.time_slot,
                   id: st.place.id,

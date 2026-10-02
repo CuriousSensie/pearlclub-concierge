@@ -1,5 +1,6 @@
 import "server-only";
 import { haversineKm } from "./geo";
+import { PLACE_COLUMNS } from "./places";
 import { getSupabase } from "./supabase";
 import type { LiveContext, PartOfDay } from "./context";
 import type { Hotel } from "./hotels";
@@ -29,7 +30,7 @@ async function cityPlaces(citySlug: string): Promise<Place[]> {
   if (hit && Date.now() - hit.at < CACHE_MS) return hit.places;
   const { data, error } = await getSupabase()
     .from("places")
-    .select("*")
+    .select(PLACE_COLUMNS)
     .eq("city_slug", citySlug)
     .not("image_url", "is", null)
     .not("lat", "is", null);
