@@ -97,7 +97,7 @@ export async function POST(req: Request): Promise<Response> {
     const hotel = getHotel(hotelId);
     // Independent lookups run together; the rate-limit check throws before any model work starts.
     const [, profile, savedPlaces, live] = await Promise.all([
-      enforceRateLimit(sessionId),
+      enforceRateLimit(req, sessionId),
       getProfile(sessionId),
       getSavedPlaces(sessionId),
       getLiveContext(hotel),
@@ -139,6 +139,7 @@ export async function POST(req: Request): Promise<Response> {
           }),
           messages: history,
           tools: mainTools,
+          maxOutputTokens: 800,
           // The plan and services cards are the answer; skip the extra model turn that would only re-describe them.
           stopWhen: [hasToolCall("plan_day"), hasToolCall("get_hotel_services"), isStepCount(6)],
         });
@@ -159,6 +160,7 @@ export async function POST(req: Request): Promise<Response> {
             },
           ],
           tools: { suggest_followups },
+          maxOutputTokens: 150,
           toolChoice: { type: "tool", toolName: "suggest_followups" },
           stopWhen: isStepCount(1),
         });

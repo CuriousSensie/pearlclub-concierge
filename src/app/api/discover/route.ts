@@ -3,7 +3,7 @@ import { haversineKm } from "@/lib/geo";
 import { areaName } from "@/lib/geocode";
 import { getHotel } from "@/lib/hotels";
 import { buildRails } from "@/lib/rails";
-import { errorResponse } from "@/lib/rateLimit";
+import { enforceLookupLimit, errorResponse } from "@/lib/rateLimit";
 
 /** A guest further than this from the hotel is treated as "not here"; rails stay hotel-centred. */
 const NEARBY_KM = 30;
@@ -16,6 +16,7 @@ export async function GET(req: Request): Promise<Response> {
     const lat = Number(url.searchParams.get("lat"));
     const lng = Number(url.searchParams.get("lng"));
     const valid = url.searchParams.has("lat") && Math.abs(lat) <= 90 && Math.abs(lng) <= 180;
+    if (valid) await enforceLookupLimit(req);
     const near = valid && haversineKm(hotel.lat, hotel.lng, lat, lng) <= NEARBY_KM;
     const anchor = near ? { lat, lng } : { lat: hotel.lat, lng: hotel.lng };
 

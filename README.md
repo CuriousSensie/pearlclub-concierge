@@ -64,7 +64,7 @@ Re-scrape (optional): `cd scraper && python -m venv .venv && . .venv/bin/activat
 
 - Bookings are requests, not live inventory; no email is sent (confirmation is in-app).
 - Place data is a scraped snapshot; neighbourhoods are not available from the source.
-- Demo hotels are fictional. Sessions are anonymous (per browser), with a per-session message cap.
+- Demo hotels are fictional. Sessions are anonymous. Usage is capped per browser session, per IP per day and for the whole demo per day (see `.env.example`), so a public link can't run up the model bill.
 
 ## Next two weeks
 

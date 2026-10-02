@@ -77,6 +77,7 @@ type Strings = {
   errGeneric: string;
   errLimit: string;
   errBusy: string;
+  errDaily: string;
   planning: string;
   rainNote: string;
   recBy: string; // {name}
@@ -179,6 +180,7 @@ const en: Strings = {
   errGeneric: "Something went wrong. Please try again.",
   errLimit: "Demo limit reached for this session.",
   errBusy: "The concierge is busy right now. Please try again in a minute.",
+  errDaily: "The demo has reached today's limit. Please come back tomorrow.",
   planning: "Planning your day…",
   rainNote: "Rain is likely, so the afternoon favours indoor spots.",
   recBy: "Recommended by {name}",
@@ -301,6 +303,7 @@ const es: Strings = {
   errGeneric: "Algo salió mal. Inténtalo de nuevo.",
   errLimit: "Se alcanzó el límite de la demo para esta sesión.",
   errBusy: "El conserje está ocupado ahora mismo. Inténtalo de nuevo en un minuto.",
+  errDaily: "La demo ha alcanzado el límite de hoy. Vuelve mañana.",
   planning: "Planificando tu día…",
   rainNote: "Es probable que llueva, así que la tarde incluye lugares cubiertos.",
   recBy: "Recomendado por {name}",
@@ -424,6 +427,7 @@ const fr: Strings = {
   errGeneric: "Une erreur est survenue. Veuillez réessayer.",
   errLimit: "Limite de la démo atteinte pour cette session.",
   errBusy: "Le concierge est très sollicité. Réessayez dans une minute.",
+  errDaily: "La démo a atteint sa limite du jour. Revenez demain.",
   planning: "Préparation de votre journée…",
   rainNote: "Il risque de pleuvoir, l'après-midi privilégie donc les lieux couverts.",
   recBy: "Recommandé par {name}",
@@ -547,6 +551,7 @@ const de: Strings = {
   errGeneric: "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.",
   errLimit: "Demo-Limit für diese Sitzung erreicht.",
   errBusy: "Der Concierge ist gerade ausgelastet. Bitte versuchen Sie es in einer Minute erneut.",
+  errDaily: "Die Demo hat das heutige Limit erreicht. Bitte kommen Sie morgen wieder.",
   planning: "Ihr Tag wird geplant…",
   rainNote: "Es wird wohl regnen, deshalb stehen am Nachmittag Orte drinnen im Fokus.",
   recBy: "Empfohlen von {name}",
@@ -670,6 +675,7 @@ const ar: Strings = {
   errGeneric: "حدث خطأ ما. يرجى المحاولة مرة أخرى.",
   errLimit: "تم الوصول إلى حد العرض التجريبي لهذه الجلسة.",
   errBusy: "المرشد مشغول حالياً. يرجى المحاولة مرة أخرى بعد دقيقة.",
+  errDaily: "وصل العرض التجريبي إلى حدّ اليوم. يرجى العودة غداً.",
   planning: "جارٍ تخطيط يومك…",
   rainNote: "من المتوقع هطول أمطار، لذا تركّز فترة بعد الظهر على الأماكن المغلقة.",
   recBy: "بتوصية من {name}",
@@ -786,6 +792,7 @@ const ur: Strings = {
   errGeneric: "کچھ غلط ہو گیا۔ براہ کرم دوبارہ کوشش کریں۔",
   errLimit: "اس سیشن کے لیے ڈیمو کی حد پوری ہو گئی۔",
   errBusy: "کنسیئرج ابھی مصروف ہے۔ براہ کرم ایک منٹ بعد دوبارہ کوشش کریں۔",
+  errDaily: "ڈیمو آج کی حد تک پہنچ گیا ہے۔ براہ کرم کل دوبارہ آئیں۔",
   planning: "آپ کا دن پلان کیا جا رہا ہے…",
   rainNote: "بارش کا امکان ہے، اس لیے سہ پہر میں اندرونی مقامات شامل ہیں۔",
   recBy: "{name} کی سفارش",

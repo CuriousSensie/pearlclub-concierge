@@ -256,6 +256,7 @@ export function Chat({ hotelId }: { hotelId: string }) {
   const lastAssistant = [...messages].reverse().find((m) => m.role === "assistant");
   const suggestions =
     !busy && messages.at(-1)?.role === "assistant" ? getSuggestions(lastAssistant) : [];
+  const isDaily = /today|daily limit/i.test(error?.message ?? "");
   const isBusy = error?.message.includes("model_busy");
   const isLimit =
     error?.message.includes("429") || error?.message.toLowerCase().includes("demo limit");
@@ -306,8 +307,16 @@ export function Chat({ hotelId }: { hotelId: string }) {
                   role="alert"
                   className="rounded-2xl border border-red-500/40 bg-red-500/10 p-3 text-sm"
                 >
-                  <p>{isLimit ? s.errLimit : isBusy ? s.errBusy : s.errGeneric}</p>
-                  {!isLimit && (
+                  <p>
+                    {isDaily
+                      ? s.errDaily
+                      : isLimit
+                        ? s.errLimit
+                        : isBusy
+                          ? s.errBusy
+                          : s.errGeneric}
+                  </p>
+                  {!isLimit && !isDaily && (
                     <button
                       type="button"
                       onClick={() => void regenerate({ body: requestBody })}
