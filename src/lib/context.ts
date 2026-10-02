@@ -80,8 +80,12 @@ export function partOfDayAt(timezone: string, now: Date): PartOfDay {
   return "night";
 }
 
-export async function getLiveContext(hotel: Hotel, now = new Date()): Promise<LiveContext> {
-  const weather = await getWeather(hotel.lat, hotel.lng);
+export async function getLiveContext(
+  hotel: Hotel,
+  now = new Date(),
+  at: { lat: number; lng: number } = hotel,
+): Promise<LiveContext> {
+  const weather = await getWeather(at.lat, at.lng);
   return {
     partOfDay: partOfDayAt(hotel.timezone, now),
     weekday: new Intl.DateTimeFormat("en-GB", { weekday: "long", timeZone: hotel.timezone }).format(

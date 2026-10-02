@@ -8,7 +8,10 @@ import { CategoryGlyph } from "../icons";
 import { formatDistance } from "@/lib/geo";
 import type { PlaceSummary } from "@/types";
 
-const label = (category: string): string => category.replace(/-/g, " ");
+const label = (category: string): string => {
+  const text = category.replace(/-/g, " ");
+  return text.charAt(0).toUpperCase() + text.slice(1);
+};
 
 /** `card` is the carousel tile; `row` is the compact layout used in plans, details and the drawer. */
 export function PlaceCard({
@@ -114,7 +117,7 @@ export function PlaceCard({
           <div className="flex items-start justify-between gap-1">
             <div className="min-w-0">
               <h3 className="font-display text-xl leading-tight">{place.name}</h3>
-              <p className="mt-0.5 flex items-center gap-1.5 text-xs capitalize text-muted">
+              <p className="mt-0.5 flex items-center gap-1.5 text-xs text-muted">
                 <CategoryGlyph category={place.category} aria-hidden className="size-3.5" />
                 {meta}
                 {place.distance_km != null && ` · ${formatDistance(place.distance_km)}`}
@@ -135,7 +138,7 @@ export function PlaceCard({
       <div className="flex flex-1 flex-col gap-2 p-4">
         <div>
           <h3 className="font-display text-[22px] leading-tight">{place.name}</h3>
-          <p className="mt-1 flex items-center gap-1.5 text-xs capitalize text-muted">
+          <p className="mt-1 flex items-center gap-1.5 text-xs text-muted">
             <CategoryGlyph category={place.category} aria-hidden className="size-3.5" />
             {meta}
           </p>

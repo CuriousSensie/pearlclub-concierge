@@ -35,20 +35,35 @@ async function main(): Promise<void> {
   const supabase = createClient(url, key, { auth: { persistSession: false } });
   const places: Place[] = JSON.parse(readFileSync("scraper/output/places.json", "utf8"));
 
-  for (let i = 0; i < places.length; i += BATCH) {
-    const batch = places.slice(i, i + BATCH);
+  // Resumable: only embed places that don't have a vector yet.
+  const { data: done, error: doneError } = await supabase
+    .from("places")
+    .select("id")
+    .not("embedding", "is", null)
+    .limit(5000);
+  if (doneError) throw new Error(`Could not list embedded places: ${doneError.message}`);
+  const embedded = new Set((done ?? []).map((r) => r.id as string));
+  const todo = places.filter((p) => !embedded.has(p.id));
+  console.log(`${embedded.size} already embedded, ${todo.length} to go`);
+
+  for (let i = 0; i < todo.length; i += BATCH) {
+    const batch = todo.slice(i, i + BATCH);
     const { embeddings } = await embedMany({
       model: openai.embedding("text-embedding-3-small"),
       values: batch.map(toDocument),
     });
     const rows = batch.map((p, j) => ({ id: p.id, embedding: JSON.stringify(embeddings[j]) }));
-    // Update only the embedding column; other columns keep their values.
-    const results = await Promise.all(
-      rows.map((r) => supabase.from("places").update({ embedding: r.embedding }).eq("id", r.id)),
-    );
-    const failed = results.find((r) => r.error);
-    if (failed?.error) throw new Error(`Batch at ${i} failed: ${failed.error.message}`);
-    console.log(`Embedded ${Math.min(i + BATCH, places.length)}/${places.length}`);
+    // Update only the embedding column, a few rows at a time to stay within connection limits.
+    for (let k = 0; k < rows.length; k += 20) {
+      const results = await Promise.all(
+        rows
+          .slice(k, k + 20)
+          .map((r) => supabase.from("places").update({ embedding: r.embedding }).eq("id", r.id)),
+      );
+      const failed = results.find((r) => r.error);
+      if (failed?.error) throw new Error(`Batch at ${i + k} failed: ${failed.error.message}`);
+    }
+    console.log(`Embedded ${Math.min(i + BATCH, todo.length)}/${todo.length}`);
   }
 }
 

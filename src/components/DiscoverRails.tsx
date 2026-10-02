@@ -5,6 +5,7 @@ import {
   CloudFog,
   CloudLightning,
   CloudRain,
+  MapPin,
   Snowflake,
   Sun,
   type LucideIcon,
@@ -23,7 +24,12 @@ type Rail = {
   places: PlaceSummary[];
 };
 type Discover = {
-  context: { partOfDay: Part; weekday: string; weather: { tempC: number; sky: Sky } | null };
+  context: {
+    partOfDay: Part;
+    weekday: string;
+    weather: { tempC: number; sky: Sky } | null;
+    location: { label: string; shared: boolean };
+  };
   rails: Rail[];
 };
 
@@ -38,19 +44,27 @@ const SKY_ICON: Record<Sky, LucideIcon> = {
 
 /** Instant, model-free content for the first screen: live weather and rails of real places. */
 export function DiscoverRails() {
-  const { hotel, s } = useApp();
+  const { hotel, s, userLocation } = useApp();
   const [data, setData] = useState<Discover | null>(null);
+  const lat = userLocation?.lat;
+  const lng = userLocation?.lng;
 
   useEffect(() => {
+    const params = new URLSearchParams({ hotel: hotel.id });
+    if (lat != null && lng != null) {
+      params.set("lat", lat.toFixed(3));
+      params.set("lng", lng.toFixed(3));
+    }
+    const query = params.toString();
     const ctrl = new AbortController();
-    fetch(`/api/discover?hotel=${hotel.id}`, { signal: ctrl.signal })
+    fetch(`/api/discover?${query}`, { signal: ctrl.signal })
       .then((r) => (r.ok ? (r.json() as Promise<Discover>) : null))
       .then((d) => d && setData(d))
       .catch((err) => {
         if ((err as Error).name !== "AbortError") console.error("discover failed", err);
       });
     return () => ctrl.abort();
-  }, [hotel.id]);
+  }, [hotel.id, lat, lng]);
 
   if (!data) {
     return (
@@ -74,16 +88,25 @@ export function DiscoverRails() {
 
   return (
     <section className="space-y-6">
-      <p className="flex items-center justify-center gap-2 text-sm text-muted">
+      <p className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-sm text-muted">
+        <span className="inline-flex items-center gap-1.5">
+          <MapPin
+            aria-hidden
+            className={`size-4 ${data.context.location.shared ? "text-accent-text" : ""}`}
+            strokeWidth={1.75}
+          />
+          {data.context.location.label}
+        </span>
         {WeatherIcon && weather && (
           <>
-            <WeatherIcon aria-hidden className="size-4" strokeWidth={1.75} />
-            <span>
+            <span aria-hidden>·</span>
+            <span className="inline-flex items-center gap-1.5">
+              <WeatherIcon aria-hidden className="size-4" strokeWidth={1.75} />
               {weather.tempC}° {s.sky[weather.sky]}
             </span>
-            <span aria-hidden>·</span>
           </>
         )}
+        <span aria-hidden>·</span>
         <span>
           {weekday} {s.part[partOfDay]}
         </span>

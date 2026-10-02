@@ -5,6 +5,7 @@ import type { LiveContext, PartOfDay } from "./context";
 import type { Hotel } from "./hotels";
 import type { PlaceSummary, Place } from "@/types";
 
+type Anchor = { lat: number; lng: number };
 export type RailKind = "now" | "local" | "budget";
 export type Rail = { kind: RailKind; part: PartOfDay; rainy: boolean; places: PlaceSummary[] };
 
@@ -39,12 +40,13 @@ async function cityPlaces(citySlug: string): Promise<Place[]> {
 }
 
 /** Nearest `pool` places to the hotel, then a random `RAIL_SIZE` of them so rails stay fresh. */
-function pick(places: Place[], hotel: Hotel, pool = 24): PlaceSummary[] {
+function pick(places: Place[], anchor: Anchor, pool = 24): PlaceSummary[] {
   const withDistance = places
     .map((p) => ({
       ...p,
       distance_km:
-        Math.round(haversineKm(hotel.lat, hotel.lng, p.lat as number, p.lng as number) * 100) / 100,
+        Math.round(haversineKm(anchor.lat, anchor.lng, p.lat as number, p.lng as number) * 100) /
+        100,
     }))
     .sort((a, b) => a.distance_km - b.distance_km)
     .slice(0, pool);
@@ -55,7 +57,11 @@ function pick(places: Place[], hotel: Hotel, pool = 24): PlaceSummary[] {
   return withDistance.slice(0, RAIL_SIZE);
 }
 
-export async function buildRails(hotel: Hotel, ctx: LiveContext): Promise<Rail[]> {
+export async function buildRails(
+  hotel: Hotel,
+  ctx: LiveContext,
+  anchor: Anchor = hotel,
+): Promise<Rail[]> {
   const all = await cityPlaces(hotel.city_slug);
   const rainy = ctx.weather?.rainy ?? false;
   const cats = NOW_CATEGORIES[ctx.partOfDay][rainy ? "wet" : "dry"];
@@ -87,7 +93,7 @@ export async function buildRails(hotel: Hotel, ctx: LiveContext): Promise<Rail[]
   const cheapEats = new Set(["cafe", "bakery", "breakfast", "lunch", "market"]);
   const budget = pick(
     all.filter((p) => !usedIds.has(p.id) && p.price_level === 1 && cheapEats.has(p.category)),
-    hotel,
+    anchor,
     40,
   );
 

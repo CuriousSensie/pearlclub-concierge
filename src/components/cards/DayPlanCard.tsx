@@ -7,6 +7,14 @@ import { PlaceCard } from "./PlaceCard";
 import { fill } from "@/lib/i18n";
 import type { DayPlanStop, TimeSlot } from "@/types";
 
+/** "Saturday 3 October" in the guest's language; falls back to the raw string if it isn't a date. */
+function formatDate(iso: string, lang: string): string {
+  const d = new Date(`${iso}T12:00:00`);
+  return Number.isNaN(d.getTime())
+    ? iso
+    : d.toLocaleDateString(lang, { weekday: "long", day: "numeric", month: "long" });
+}
+
 export function DayPlanCard({
   plan,
   theme,
@@ -16,7 +24,7 @@ export function DayPlanCard({
   theme?: string;
   date?: string;
 }) {
-  const { s, saveMany, sendText } = useApp();
+  const { s, lang, saveMany, sendText } = useApp();
   const slotLabel: Record<TimeSlot, string> = {
     morning: s.slotMorning,
     lunch: s.slotLunch,
@@ -27,7 +35,9 @@ export function DayPlanCard({
   return (
     <section className="space-y-4">
       {(theme || date) && (
-        <h3 className="font-display text-2xl">{[theme, date].filter(Boolean).join(" · ")}</h3>
+        <h3 className="font-display text-2xl">
+          {[theme, date && formatDate(date, lang)].filter(Boolean).join(" · ")}
+        </h3>
       )}
       <ol className="space-y-5">
         {plan.map((stop, i) => (
