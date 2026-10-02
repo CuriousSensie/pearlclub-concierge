@@ -14,6 +14,7 @@ export type Hotel = {
   city_slug: string;
   lat: number;
   lng: number;
+  timezone: string;
   accentColor: string;
   tagline: string;
   services: HotelService[];
@@ -78,6 +79,7 @@ export const HOTELS: Record<string, Hotel> = {
     city_slug: "london",
     lat: 51.4994,
     lng: -0.1745,
+    timezone: "Europe/London",
     accentColor: "#8a5a2b",
     tagline: "A townhouse retreat in the heart of London",
     services: commonServices("Heathrow", "from €95"),
@@ -89,6 +91,7 @@ export const HOTELS: Record<string, Hotel> = {
     city_slug: "barcelona",
     lat: 41.3851,
     lng: 2.1734,
+    timezone: "Europe/Madrid",
     accentColor: "#1f6f78",
     tagline: "Seaside calm steps from the Gothic Quarter",
     services: commonServices("El Prat", "from €85"),
