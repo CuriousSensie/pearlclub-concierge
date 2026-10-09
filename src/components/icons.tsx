@@ -1,57 +1,27 @@
-import type { ComponentProps } from "react";
-import {
-  BedDouble,
-  Car,
-  Clock,
-  Coffee,
-  Croissant,
-  EggFried,
-  Flower2,
-  Footprints,
-  Landmark,
-  Martini,
-  Palette,
-  Sandwich,
-  ShoppingBag,
-  ShoppingBasket,
-  Sparkles,
-  Utensils,
-  Wine,
-  type LucideIcon,
-} from "lucide-react";
-
-export const CATEGORY_ICON: Record<string, LucideIcon> = {
-  cafe: Coffee,
-  bakery: Croissant,
-  breakfast: EggFried,
-  lunch: Sandwich,
-  dinner: Utensils,
-  bar: Martini,
-  "outdoor-drinks": Wine,
-  "arts-culture": Palette,
-  market: ShoppingBasket,
-  stay: BedDouble,
-  shop: ShoppingBag,
-  other: Landmark,
+/** Pearl Club's iconography for content is emoji; outline icons are reserved for controls. */
+export const CATEGORY_EMOJI: Record<string, string> = {
+  cafe: "☕",
+  bakery: "🥖",
+  breakfast: "🍳",
+  lunch: "🥪",
+  dinner: "🍽️",
+  bar: "🥃",
+  "outdoor-drinks": "🍹",
+  "arts-culture": "🎭",
+  market: "🧺",
+  stay: "🛏️",
+  shop: "🛍️",
+  other: "✨",
 };
 
-export const SERVICE_ICON: Record<string, LucideIcon> = {
-  car: Car,
-  spa: Flower2,
-  clock: Clock,
-  breakfast: Coffee,
-  dining: Utensils,
-  walk: Footprints,
+export const SERVICE_EMOJI: Record<string, string> = {
+  car: "🚗",
+  spa: "💆",
+  clock: "🕓",
+  breakfast: "🥐",
+  dining: "🍽️",
+  walk: "🚶",
 };
 
-type GlyphProps = Omit<ComponentProps<LucideIcon>, "ref">;
-
-export function CategoryGlyph({ category, ...props }: GlyphProps & { category: string }) {
-  const Icon = CATEGORY_ICON[category] ?? Sparkles;
-  return <Icon {...props} />;
-}
-
-export function ServiceGlyph({ name, ...props }: GlyphProps & { name: string }) {
-  const Icon = SERVICE_ICON[name] ?? Sparkles;
-  return <Icon {...props} />;
-}
+export const categoryEmoji = (category: string): string => CATEGORY_EMOJI[category] ?? "✨";
+export const serviceEmoji = (key: string): string => SERVICE_EMOJI[key] ?? "✨";

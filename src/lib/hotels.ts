@@ -15,7 +15,6 @@ export type Hotel = {
   lat: number;
   lng: number;
   timezone: string;
-  accentColor: string;
   tagline: string;
   services: HotelService[];
 };
@@ -80,7 +79,6 @@ export const HOTELS: Record<string, Hotel> = {
     lat: 51.4994,
     lng: -0.1745,
     timezone: "Europe/London",
-    accentColor: "#8a5a2b",
     tagline: "A townhouse retreat in the heart of London",
     services: commonServices("Heathrow", "from €95"),
   },
@@ -92,10 +90,18 @@ export const HOTELS: Record<string, Hotel> = {
     lat: 41.3851,
     lng: 2.1734,
     timezone: "Europe/Madrid",
-    accentColor: "#1f6f78",
     tagline: "Seaside calm steps from the Gothic Quarter",
     services: commonServices("El Prat", "from €85"),
   },
+};
+
+/** Flag asset (Pearl Club's own, copied to /public/flags) and short code shown on place cards. */
+export const CITY_META: Record<string, { flag: string; code: string }> = {
+  london: { flag: "/flags/london.svg", code: "LDN" },
+  barcelona: { flag: "/flags/barcelona.svg", code: "BCN" },
+  berlin: { flag: "/flags/berlin.svg", code: "BER" },
+  paris: { flag: "/flags/paris.svg", code: "PAR" },
+  amsterdam: { flag: "/flags/amsterdam.svg", code: "AMS" },
 };
 
 export const DEFAULT_HOTEL_ID = "kensington-house";

@@ -74,17 +74,13 @@ export function TripDrawer({
         aria-modal="true"
         aria-label={s.myTrip}
         className={clsx(
-          "absolute inset-y-0 end-0 flex w-full max-w-md flex-col bg-paper shadow-[var(--pop)] transition-transform duration-300",
+          "absolute inset-y-0 end-0 flex w-full max-w-md flex-col bg-paper shadow-[var(--shadow-card)] transition-transform duration-300",
           open ? "translate-x-0" : "ltr:translate-x-full rtl:-translate-x-full",
         )}
       >
         <div className="flex items-center justify-between border-b border-line px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
-          <h2 className="font-display text-2xl">{s.myTrip}</h2>
-          <button
-            type="button"
-            onClick={onClose}
-            className="h-9 rounded-full border border-line px-3 text-sm"
-          >
+          <h2 className="pc-title text-xl">{s.myTrip}</h2>
+          <button type="button" onClick={onClose} className="pc-chip">
             {s.close}
           </button>
         </div>
@@ -95,10 +91,8 @@ export function TripDrawer({
               role="tab"
               aria-selected={tab === t}
               onClick={() => setTab(t)}
-              className={clsx(
-                "h-9 rounded-full px-4 text-sm font-medium",
-                tab === t ? "bg-accent text-accent-ink" : "border border-line",
-              )}
+              className="pc-chip"
+              data-active={tab === t}
             >
               {t === "saved"
                 ? `${s.savedTab} (${places.length})`
@@ -117,10 +111,10 @@ export function TripDrawer({
           {tab === "bookings" &&
             (bookings.length ? (
               bookings.map((b) => (
-                <div key={b.id} className="rounded-2xl border border-line bg-card p-3.5">
+                <div key={b.id} className="pc-card p-4">
                   <div className="flex items-start justify-between gap-2">
-                    <h3 className="font-medium">{b.item_name}</h3>
-                    <span className="shrink-0 rounded-full bg-accent/15 px-2 py-0.5 text-xs capitalize text-accent">
+                    <h3 className="pc-title text-base">{b.item_name}</h3>
+                    <span className="pc-strip shrink-0 rounded-full px-2.5 py-0.5 text-xs capitalize">
                       {b.status}
                     </span>
                   </div>

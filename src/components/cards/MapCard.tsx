@@ -49,7 +49,7 @@ export function MapCard({
 
         const hotelEl = document.createElement("div");
         hotelEl.className =
-          "h-6 w-6 rounded-md border-2 border-white bg-[var(--ink)] text-white shadow";
+          "h-6 w-6 rounded-md border-2 border-white bg-[var(--black)] text-white shadow";
         hotelEl.innerHTML =
           '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin:3px"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M10 21v-6h4v6"/></svg>'; // static markup, no user input
         hotelEl.title = hotel.name;
@@ -60,7 +60,7 @@ export function MapCard({
           bounds.extend(lngLat);
           const pin = document.createElement("div");
           pin.className =
-            "flex h-7 min-w-7 items-center justify-center rounded-full border-2 border-white bg-[var(--accent)] px-1 text-xs font-semibold text-white shadow";
+            "flex h-7 min-w-7 items-center justify-center rounded-full border-2 border-white bg-[var(--black)] px-1 text-xs font-semibold text-white shadow";
           pin.textContent = numbered ? String(i + 1) : "";
           pin.setAttribute("aria-label", p.name);
 
@@ -73,7 +73,7 @@ export function MapCard({
           link.rel = "noopener noreferrer";
           link.textContent = "Pearl Club ↗";
           link.style.cssText =
-            "display:block;color:#1f6f78;text-decoration:underline;margin-top:2px";
+            "display:block;color:#121113;text-decoration:underline;margin-top:2px";
           popup.append(title, link);
           popup.style.cssText = "color:#14202b;font-size:13px";
 
@@ -101,7 +101,7 @@ export function MapCard({
               type: "line",
               source: "route",
               layout: { "line-join": "round", "line-cap": "round" },
-              paint: { "line-color": "#1f6f78", "line-width": 3, "line-dasharray": [2, 1.5] },
+              paint: { "line-color": "#121113", "line-width": 3, "line-dasharray": [2, 1.5] },
             });
           }
         });
@@ -127,7 +127,7 @@ export function MapCard({
       role="region"
       aria-label="Map"
       style={{ height }}
-      className="w-full overflow-hidden rounded-2xl border border-line bg-line"
+      className="pc-card w-full overflow-hidden bg-strip"
     />
   );
 }

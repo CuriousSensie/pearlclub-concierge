@@ -70,7 +70,7 @@ export function DiscoverRails() {
     return (
       <div
         aria-hidden
-        className="h-72 animate-pulse rounded-2xl bg-line/50 motion-reduce:animate-none"
+        className="h-72 animate-pulse rounded-3xl bg-strip motion-reduce:animate-none"
       />
     );
   }
@@ -92,34 +92,26 @@ export function DiscoverRails() {
         : s.railBudget;
 
   return (
-    <section className="space-y-6">
-      <p className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-sm text-muted">
-        <span className="inline-flex items-center gap-1.5">
-          <MapPin
-            aria-hidden
-            className={`size-4 ${data.context.location.shared ? "text-accent-text" : ""}`}
-            strokeWidth={1.75}
-          />
+    <section className="space-y-7">
+      <div className="flex flex-wrap items-center justify-center gap-2">
+        <span className="pc-chip min-h-8 text-[13px]">
+          <MapPin aria-hidden className="size-3.5" strokeWidth={1.75} />
           {data.context.location.label}
         </span>
         {WeatherIcon && weather && (
-          <>
-            <span aria-hidden>·</span>
-            <span className="inline-flex items-center gap-1.5">
-              <WeatherIcon aria-hidden className="size-4" strokeWidth={1.75} />
-              {weather.tempC}° {s.sky[weather.sky]}
-            </span>
-          </>
+          <span className="pc-chip min-h-8 text-[13px]">
+            <WeatherIcon aria-hidden className="size-3.5" strokeWidth={1.75} />
+            {weather.tempC}° {s.sky[weather.sky]}
+          </span>
         )}
-        <span aria-hidden>·</span>
-        <span>
+        <span className="pc-chip min-h-8 text-[13px]">
           {weekdayName} {s.part[partOfDay]}
         </span>
-      </p>
+      </div>
       {data.rails.map((rail) => (
         <div key={rail.kind} className="space-y-3">
-          <h3 className="font-display text-2xl">{title(rail)}</h3>
-          <div className="scroll-snap-row -mx-4 flex gap-3 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0">
+          <h3 className="pc-title text-lg">{title(rail)}</h3>
+          <div className="scroll-snap-row -mx-4 flex gap-4 overflow-x-auto px-4 pb-4 pt-1 sm:mx-0 sm:px-0">
             {rail.places.map((p) => (
               <PlaceCard key={p.id} place={p} />
             ))}

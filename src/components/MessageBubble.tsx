@@ -87,7 +87,11 @@ function Progress({ tool }: { tool: string }) {
   return (
     <div role="status" className="space-y-2">
       <p className="flex items-center gap-2.5 text-sm text-muted">
-        <span aria-hidden className="pearl size-4 rounded-full" />
+        <span aria-hidden className="dot-pulse">
+          <span />
+          <span />
+          <span />
+        </span>
         {label[tool] ?? s.thinking}
       </p>
       <Skeleton />
@@ -99,7 +103,7 @@ function Skeleton() {
   return (
     <div
       aria-hidden
-      className="h-56 w-4/5 animate-pulse rounded-2xl bg-line/60 motion-reduce:animate-none"
+      className="h-56 w-4/5 animate-pulse rounded-3xl bg-strip motion-reduce:animate-none"
     />
   );
 }
@@ -175,7 +179,7 @@ export function MessageBubble({ message }: { message: UIMessage }) {
     const text = message.parts.map((p) => (p.type === "text" ? p.text : "")).join("");
     return (
       <div className="rise flex justify-end">
-        <p className="max-w-[85%] whitespace-pre-wrap rounded-3xl rounded-ee-lg bg-accent px-4 py-2.5 text-[15px] leading-snug text-accent-ink">
+        <p className="max-w-[85%] whitespace-pre-wrap rounded-3xl rounded-ee-md bg-[var(--black)] px-4 py-2.5 text-[15px] leading-snug text-white">
           {text}
         </p>
       </div>

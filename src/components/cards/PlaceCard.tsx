@@ -2,16 +2,40 @@
 
 import clsx from "clsx";
 import { ExternalLink, Heart } from "lucide-react";
+import Image from "next/image";
 import { useApp } from "../AppContext";
-import { Curator } from "../Curator";
-import { CategoryGlyph } from "../icons";
+import { Curator, CuratorAvatar } from "../Curator";
+import { categoryEmoji } from "../icons";
 import { formatDistance } from "@/lib/geo";
+import { CITY_META } from "@/lib/hotels";
 import type { PlaceSummary } from "@/types";
 
-const label = (category: string): string => {
-  const text = category.replace(/-/g, " ");
-  return text.charAt(0).toUpperCase() + text.slice(1);
-};
+/** Flag + city code, category emoji and price: the footer facts on every Pearl Club card. */
+function Facts({ place }: { place: PlaceSummary }) {
+  const city = CITY_META[place.city_slug];
+  return (
+    <div className="flex items-center gap-2.5">
+      <span className="flex items-center gap-1.5">
+        {city && <Image src={city.flag} alt="" width={20} height={20} className="size-5" />}
+        <span className="pc-title text-[13px]">
+          {city?.code ?? place.city_slug.slice(0, 3).toUpperCase()}
+        </span>
+      </span>
+      <span
+        aria-label={place.category.replace(/-/g, " ")}
+        role="img"
+        className="text-lg leading-none"
+      >
+        {categoryEmoji(place.category)}
+      </span>
+      {place.price_level ? (
+        <span className="rounded-md border border-slate-300 px-1.5 text-[13px] leading-5 text-slate-400">
+          {"$".repeat(place.price_level)}
+        </span>
+      ) : null}
+    </div>
+  );
+}
 
 /** `card` is the carousel tile; `row` is the compact layout used in plans, details and the drawer. */
 export function PlaceCard({
@@ -24,9 +48,6 @@ export function PlaceCard({
   const { s, savedIds, toggleSave, sendText } = useApp();
   const saved = savedIds.has(place.id);
   const row = variant === "row";
-  const meta = [label(place.category), place.price_level ? "$".repeat(place.price_level) : null]
-    .filter(Boolean)
-    .join(" · ");
 
   const heart = (
     <button
@@ -34,120 +55,110 @@ export function PlaceCard({
       aria-pressed={saved}
       aria-label={saved ? s.saved : s.save}
       onClick={() => void toggleSave(place)}
-      className={clsx(
-        "inline-flex shrink-0 items-center justify-center rounded-full transition-colors",
-        row ? "size-10" : "absolute end-2 top-2 size-10 bg-paper/90 backdrop-blur",
-        saved ? "text-accent-text" : "text-ink",
-      )}
+      className={clsx("pc-fab shrink-0", row ? "size-10" : "size-9")}
     >
       <Heart
         aria-hidden
-        className="size-5"
+        className={clsx("size-[18px]", saved && "text-[var(--grad-red)]")}
         fill={saved ? "currentColor" : "none"}
         strokeWidth={1.75}
       />
     </button>
   );
 
-  const image = (
-    <div
-      className={clsx(
-        "relative shrink-0 overflow-hidden bg-gradient-to-br from-accent/25 to-line",
-        row ? "size-24 rounded-xl" : "aspect-[16/10]",
-      )}
+  const link = (
+    <a
+      href={place.pearlclub_url}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={s.viewOnPearl}
+      title={s.viewOnPearl}
+      className={clsx("pc-fab shrink-0", row ? "size-10" : "size-9")}
     >
-      {place.image_url ? (
-        // eslint-disable-next-line @next/next/no-img-element -- remote CMS images, no optimizer needed
-        <img
-          src={place.image_url}
-          alt={place.name}
-          loading="lazy"
-          className="size-full object-cover"
-        />
-      ) : (
-        <div className="flex size-full items-center justify-center text-accent-text">
-          <CategoryGlyph
-            category={place.category}
-            aria-hidden
-            className="size-8"
-            strokeWidth={1.5}
-          />
-        </div>
-      )}
-      {!row && place.distance_km != null && (
-        <span className="absolute bottom-2 start-2 rounded-full bg-black/65 px-2.5 py-1 text-xs font-medium text-white">
-          {formatDistance(place.distance_km)} {s.away}
-        </span>
-      )}
-      {!row && heart}
-    </div>
+      <ExternalLink aria-hidden className="size-4 rtl:-scale-x-100" strokeWidth={1.75} />
+    </a>
   );
 
-  const actions = (
-    <div className="flex items-center gap-2">
-      <button
-        type="button"
-        onClick={() => sendText(`I'd like to book ${place.name}`)}
-        className="h-9 rounded-full bg-accent px-4 text-sm font-medium text-accent-ink"
-      >
-        {s.book}
-      </button>
-      <a
-        href={place.pearlclub_url}
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label={s.viewOnPearl}
-        title={s.viewOnPearl}
-        className={clsx(
-          "inline-flex h-9 items-center gap-1.5 text-sm font-medium text-accent-text underline-offset-4 hover:underline",
-          row && "w-9 justify-center rounded-full border border-line hover:no-underline",
-        )}
-      >
-        {!row && s.viewOnPearl}
-        <ExternalLink aria-hidden className="size-3.5 rtl:-scale-x-100" />
-      </a>
+  const book = (
+    <button
+      type="button"
+      onClick={() => sendText(`I'd like to book ${place.name}`)}
+      className="pc-btn pc-btn-sm"
+    >
+      {s.book}
+    </button>
+  );
+
+  const photo = place.image_url ? (
+    // eslint-disable-next-line @next/next/no-img-element -- remote CMS images, no optimizer needed
+    <img src={place.image_url} alt={place.name} loading="lazy" className="size-full object-cover" />
+  ) : (
+    <div className="flex size-full items-center justify-center bg-strip text-4xl" aria-hidden>
+      {categoryEmoji(place.category)}
     </div>
   );
 
   if (row) {
     return (
-      <article className="flex gap-3 rounded-2xl border border-line bg-card p-2.5">
-        {image}
-        <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-          <div className="flex items-start justify-between gap-1">
-            <div className="min-w-0">
-              <h3 className="font-display text-xl leading-tight">{place.name}</h3>
-              <p className="mt-0.5 flex items-center gap-1.5 text-xs text-muted">
-                <CategoryGlyph category={place.category} aria-hidden className="size-3.5" />
-                {meta}
-                {place.distance_km != null && ` · ${formatDistance(place.distance_km)}`}
-              </p>
+      <article className="pc-card overflow-hidden">
+        <div className="flex gap-3 p-3">
+          <div className="relative size-24 shrink-0">
+            <div className="size-full overflow-hidden rounded-2xl bg-line">{photo}</div>
+            <div className="absolute -bottom-2 -end-2">
+              <CuratorAvatar place={place} className="size-8" />
             </div>
-            {heart}
           </div>
-          <Curator place={place} size="sm" />
-          {actions}
+          <div className="flex min-w-0 flex-1 flex-col gap-1">
+            <h3 className="pc-title text-base leading-tight">{place.name}</h3>
+            <Curator place={place} />
+            {place.distance_km != null && (
+              <p className="text-xs text-muted">
+                {formatDistance(place.distance_km)} {s.away}
+              </p>
+            )}
+          </div>
+        </div>
+        <div className="pc-strip flex items-center justify-between gap-2 px-3 py-2">
+          <Facts place={place} />
+          <div className="flex items-center gap-1.5">
+            {heart}
+            {link}
+            {book}
+          </div>
         </div>
       </article>
     );
   }
 
   return (
-    <article className="flex w-[80vw] max-w-72 shrink-0 flex-col overflow-hidden rounded-2xl border border-line bg-card sm:w-full sm:max-w-none">
-      {image}
-      <div className="flex flex-1 flex-col gap-2 p-4">
-        <div>
-          <h3 className="font-display text-[22px] leading-tight">{place.name}</h3>
-          <p className="mt-1 flex items-center gap-1.5 text-xs text-muted">
-            <CategoryGlyph category={place.category} aria-hidden className="size-3.5" />
-            {meta}
-          </p>
+    <article className="pc-card flex w-[80vw] max-w-72 shrink-0 flex-col overflow-hidden sm:w-full sm:max-w-none">
+      <div className="relative p-3">
+        <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-line">
+          {photo}
+          <div className="absolute end-2 top-2 flex gap-1.5">
+            {heart}
+            {link}
+          </div>
+          {place.distance_km != null && (
+            <span className="absolute bottom-2 start-2 rounded-full bg-black/65 px-2.5 py-1 text-xs font-medium text-white">
+              {formatDistance(place.distance_km)} {s.away}
+            </span>
+          )}
         </div>
-        <Curator place={place} />
+        <div className="absolute bottom-0 end-6 translate-y-1/3">
+          <CuratorAvatar place={place} />
+        </div>
+      </div>
+      <div className="flex flex-1 flex-col gap-1.5 px-4 pb-3 pt-3">
+        <h3 className="pc-title text-xl leading-tight">{place.name}</h3>
         {place.description && (
-          <p className="line-clamp-3 text-sm leading-relaxed text-ink/80">{place.description}</p>
+          <p className="line-clamp-3 text-sm leading-5 text-muted">{place.description}</p>
         )}
-        <div className="mt-auto pt-1">{actions}</div>
+        <Curator place={place} />
+      </div>
+      <div className="pc-strip flex items-center justify-between gap-2 px-4 py-3">
+        <Facts place={place} />
+        {book}
       </div>
     </article>
   );

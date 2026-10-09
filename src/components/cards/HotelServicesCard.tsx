@@ -1,36 +1,39 @@
 "use client";
 
 import { useApp } from "../AppContext";
-import { ServiceGlyph } from "../icons";
+import { serviceEmoji } from "../icons";
 import type { HotelServiceInfo } from "@/types";
 
 export function HotelServicesCard({ services }: { services: HotelServiceInfo[] }) {
   const { s, sendText } = useApp();
   return (
-    <ul className="grid gap-2.5 sm:grid-cols-2">
-      {services.map((svc) => {
-        return (
-          <li key={svc.id} className="flex gap-3 rounded-2xl border border-line bg-card p-3.5">
-            <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-accent/12 text-accent-text">
-              <ServiceGlyph name={svc.icon} aria-hidden className="size-5" strokeWidth={1.75} />
-            </span>
-            <div className="flex min-w-0 flex-1 flex-col gap-1">
-              <div className="flex items-baseline justify-between gap-2">
-                <h3 className="font-medium leading-snug">{svc.name}</h3>
-                <span className="shrink-0 text-xs text-muted">{svc.price}</span>
-              </div>
-              <p className="text-sm leading-relaxed text-ink/75">{svc.description}</p>
-              <button
-                type="button"
-                onClick={() => sendText(`I'd like to book ${svc.name}`)}
-                className="mt-1.5 h-9 self-start rounded-full bg-accent px-4 text-sm font-medium text-accent-ink"
-              >
-                {s.request}
-              </button>
+    <ul className="grid gap-3 sm:grid-cols-2">
+      {services.map((svc) => (
+        <li key={svc.id} className="pc-card flex gap-3 p-4">
+          <span
+            aria-hidden
+            className="pc-strip inline-flex size-11 shrink-0 items-center justify-center rounded-full text-2xl"
+          >
+            {serviceEmoji(svc.icon)}
+          </span>
+          <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+            <div className="flex items-start justify-between gap-2">
+              <h3 className="pc-title text-base leading-snug">{svc.name}</h3>
+              <span className="shrink-0 rounded-md border border-slate-300 px-1.5 text-[13px] leading-5 text-slate-400">
+                {svc.price}
+              </span>
             </div>
-          </li>
-        );
-      })}
+            <p className="text-sm leading-5 text-muted">{svc.description}</p>
+            <button
+              type="button"
+              onClick={() => sendText(`I'd like to book ${svc.name}`)}
+              className="pc-btn pc-btn-sm mt-1 self-start"
+            >
+              {s.request}
+            </button>
+          </div>
+        </li>
+      ))}
     </ul>
   );
 }

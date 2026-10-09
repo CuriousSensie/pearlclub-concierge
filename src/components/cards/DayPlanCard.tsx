@@ -37,38 +37,38 @@ export function DayPlanCard({
   return (
     <section className="space-y-4">
       {(theme || date) && (
-        <h3 className="font-display text-2xl">
+        <h3 className="font-display text-3xl italic leading-tight">
           {[theme, date && formatDate(date, lang)].filter(Boolean).join(" · ")}
         </h3>
       )}
       {rainy && (
-        <p className="flex items-center gap-2 text-sm text-muted">
+        <p className="pc-chip">
           <CloudRain aria-hidden className="size-4" strokeWidth={1.75} />
           {s.rainNote}
         </p>
       )}
-      <ol className="space-y-5">
+      <ol className="space-y-6">
         {plan.map((stop, i) => (
-          <li key={`${stop.place.id}-${i}`} className="relative ps-7">
+          <li key={`${stop.place.id}-${i}`} className="relative ps-8">
             <span
               aria-hidden
-              className="absolute start-0 top-0.5 inline-flex size-5 items-center justify-center rounded-full bg-accent text-[11px] font-semibold text-accent-ink"
+              className="pc-title absolute start-0 top-0 inline-flex size-6 items-center justify-center rounded-full bg-[var(--black)] text-xs text-white"
             >
               {i + 1}
             </span>
             {i < plan.length - 1 && (
-              <span aria-hidden className="absolute -bottom-5 start-[9.5px] top-6 w-px bg-line" />
+              <span aria-hidden className="absolute -bottom-6 start-[11.5px] top-7 w-px bg-line" />
             )}
             <div className="flex items-center justify-between gap-2">
-              <p className="text-sm font-semibold">{slotLabel[stop.time_slot]}</p>
+              <p className="pc-title text-sm">{slotLabel[stop.time_slot]}</p>
               {stop.walk_min != null && (
-                <span className="inline-flex items-center gap-1 text-xs text-muted">
+                <span className="inline-flex items-center gap-1 font-mono text-xs text-muted">
                   <Footprints aria-hidden className="size-3.5" />
                   {fill(s.walkMin, { n: String(stop.walk_min) })}
                 </span>
               )}
             </div>
-            <p className="mb-2.5 mt-0.5 text-sm leading-relaxed text-muted">{stop.reason}</p>
+            <p className="mb-3 mt-1 text-sm leading-5 text-muted">{stop.reason}</p>
             <PlaceCard place={stop.place} variant="row" />
             <button
               type="button"
@@ -77,7 +77,7 @@ export function DayPlanCard({
                   `Swap stop ${i + 1} (${stop.time_slot}: ${stop.place.name}) for something different.`,
                 )
               }
-              className="mt-1.5 inline-flex h-8 items-center gap-1.5 text-xs font-medium text-muted hover:text-ink"
+              className="pc-chip mt-2.5 min-h-8 text-[13px]"
             >
               <Shuffle aria-hidden className="size-3.5" />
               {s.swap}
@@ -86,16 +86,14 @@ export function DayPlanCard({
         ))}
       </ol>
       <MapCard places={plan.map((p) => p.place)} numbered />
-      <div className="flex flex-wrap gap-2">
-        <button
-          type="button"
-          onClick={() => void saveMany(plan.map((p) => p.place))}
-          className="inline-flex h-10 items-center gap-2 rounded-full bg-accent px-4 text-sm font-medium text-accent-ink"
-        >
-          <BookmarkPlus aria-hidden className="size-4" />
-          {s.saveAll}
-        </button>
-      </div>
+      <button
+        type="button"
+        onClick={() => void saveMany(plan.map((p) => p.place))}
+        className="pc-btn"
+      >
+        <BookmarkPlus aria-hidden className="size-4" />
+        {s.saveAll}
+      </button>
     </section>
   );
 }

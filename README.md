@@ -56,6 +56,7 @@ flowchart LR
 - **Hybrid retrieval.** Embeddings (pgvector, `text-embedding-3-small`) handle "vibe" queries; filters handle category, price and distance; keyword search is the fallback.
 - **The server plans the day.** `plan_day` picks stops and a walking route itself in one step, which is faster and more reliable than having the model search and assemble. The model only chooses the theme and mood.
 - **Human-confirmed bookings.** The model proposes a form, the guest submits it, and the form posts to the API directly. The model never creates a booking.
+- **Native Pearl Club look.** The UI follows pearlclub.com's design system (Karla, Space Mono and Cormorant type, black buttons, pill chips, 24px cards with the flag, category emoji and price strip, the gradient-ring search field and the mobile tab bar), so it reads as part of the same product.
 - **Locals first.** Each place carries the Pearl Club local who recommended it. That is the brand's edge over generic travel AI, so it is shown on every card.
 - **Multi-tenant by config.** Hotels are data (`?hotel=`), so a new hotel is configuration, not code.
 - **Cost and abuse guards.** Caps per session, per IP per day and for the whole demo per day; output-token ceilings on every model call; input and body-size limits.

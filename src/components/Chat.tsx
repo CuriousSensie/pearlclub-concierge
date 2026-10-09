@@ -2,8 +2,9 @@
 
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
-import { useEffect, useState, type CSSProperties, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { ArrowUp } from "lucide-react";
+import { BottomNav } from "./BottomNav";
 import { AppProvider, type AppState } from "./AppContext";
 import { Header } from "./Header";
 import { MessageBubble, getSuggestions } from "./MessageBubble";
@@ -263,17 +264,14 @@ export function Chat({ hotelId }: { hotelId: string }) {
 
   return (
     <AppProvider value={ctx}>
-      <div
-        style={{ "--accent": hotel.accentColor } as CSSProperties}
-        className="flex min-h-dvh flex-col"
-      >
+      <div className="flex min-h-dvh flex-col">
         <Header
           tripCount={savedIds.size + bookingCount}
           onOpenTrip={() => setTripOpen(true)}
           onLanguage={changeLanguage}
         />
 
-        <main className="mx-auto w-full max-w-3xl flex-1 px-4">
+        <main className="mx-auto w-full max-w-3xl flex-1 px-4 pb-36 sm:pb-24">
           {messages.length === 0 ? (
             <div className="-mx-4">
               <WelcomeScreen
@@ -292,7 +290,6 @@ export function Chat({ hotelId }: { hotelId: string }) {
               ))}
               {status === "submitted" && (
                 <div role="status" className="flex items-center gap-2.5 py-1">
-                  <span aria-hidden className="pearl size-4 rounded-full" />
                   <span aria-hidden className="dot-pulse">
                     <span />
                     <span />
@@ -303,11 +300,8 @@ export function Chat({ hotelId }: { hotelId: string }) {
               )}
               {suggestions.length > 0 && <SuggestionChips suggestions={suggestions} />}
               {error && (
-                <div
-                  role="alert"
-                  className="rounded-2xl border border-red-500/40 bg-red-500/10 p-3 text-sm"
-                >
-                  <p>
+                <div role="alert" className="pc-card space-y-3 p-4">
+                  <p className="font-display text-xl italic leading-snug">
                     {isDaily
                       ? s.errDaily
                       : isLimit
@@ -320,7 +314,7 @@ export function Chat({ hotelId }: { hotelId: string }) {
                     <button
                       type="button"
                       onClick={() => void regenerate({ body: requestBody })}
-                      className="mt-2 h-8 rounded-full border border-line px-3 font-medium"
+                      className="pc-btn pc-btn-sm"
                     >
                       {s.retry}
                     </button>
@@ -333,31 +327,36 @@ export function Chat({ hotelId }: { hotelId: string }) {
           {messages.length > 0 && <div aria-hidden className="h-[45vh]" />}
         </main>
 
-        <form
-          onSubmit={onSubmit}
-          className="sticky bottom-0 z-20 border-t border-line bg-paper/95 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur"
-        >
-          <div className="mx-auto flex max-w-3xl items-center gap-2 px-4">
-            <label className="relative block min-w-0 flex-1">
-              <span className="sr-only">{s.placeholder}</span>
-              <input
-                value={input}
-                maxLength={MAX_INPUT}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder={s.placeholder}
-                className="h-12 w-full rounded-full border border-line bg-card ps-5 pe-14 text-base"
-              />
-              <button
-                type="submit"
-                aria-label={s.send}
-                disabled={busy || !input.trim()}
-                className="absolute end-1.5 top-1.5 inline-flex size-9 items-center justify-center rounded-full bg-accent text-accent-ink transition-opacity disabled:opacity-30"
-              >
-                <ArrowUp aria-hidden className="size-5" />
-              </button>
-            </label>
-          </div>
-        </form>
+        <div className="fixed inset-x-0 bottom-0 z-30 bg-paper/95 backdrop-blur">
+          <form onSubmit={onSubmit} className="px-4 pb-4 pt-3 sm:pb-3">
+            <div className="pc-ring mx-auto max-w-3xl">
+              <label className="relative flex items-center rounded-full bg-white">
+                <span className="sr-only">{s.placeholder}</span>
+                <input
+                  id="composer"
+                  value={input}
+                  maxLength={MAX_INPUT}
+                  onChange={(e) => setInput(e.target.value)}
+                  placeholder={s.placeholder}
+                  className="h-11 w-full rounded-full bg-transparent ps-5 pe-14 text-base placeholder:text-muted"
+                />
+                <button
+                  type="submit"
+                  aria-label={s.send}
+                  disabled={busy || !input.trim()}
+                  className="absolute end-1 top-1 inline-flex size-9 items-center justify-center rounded-full bg-[image:var(--gradient)] text-white transition-opacity disabled:opacity-30"
+                >
+                  <ArrowUp aria-hidden className="size-5" />
+                </button>
+              </label>
+            </div>
+          </form>
+          <BottomNav
+            tripCount={savedIds.size + bookingCount}
+            onOpenTrip={() => setTripOpen(true)}
+            onLanguage={changeLanguage}
+          />
+        </div>
 
         <TripDrawer
           open={tripOpen}

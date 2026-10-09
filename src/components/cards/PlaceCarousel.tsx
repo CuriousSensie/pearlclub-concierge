@@ -20,7 +20,7 @@ export function PlaceCarousel({
 
   return (
     <div className="space-y-3">
-      <div className="scroll-snap-row -mx-4 flex gap-3 overflow-x-auto px-4 pb-1 sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0">
+      <div className="scroll-snap-row -mx-4 flex gap-4 overflow-x-auto px-4 pb-4 pt-1 sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0">
         {places.map((p) => (
           <PlaceCard key={p.id} place={p} />
         ))}
@@ -31,9 +31,9 @@ export function PlaceCarousel({
             type="button"
             aria-expanded={mapOpen}
             onClick={() => setMapOpen((o) => !o)}
-            className="inline-flex h-10 items-center gap-2 rounded-full border border-line bg-card px-4 text-sm font-medium"
+            className="pc-chip"
           >
-            <MapIcon aria-hidden className="size-4" />
+            <MapIcon aria-hidden className="size-4" strokeWidth={1.75} />
             {mapOpen ? s.hideMap : s.showOnMap}
           </button>
           {mapOpen && <MapCard places={places} />}

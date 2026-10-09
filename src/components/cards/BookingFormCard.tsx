@@ -26,7 +26,7 @@ function tomorrow(): string {
   return d.toLocaleDateString("en-CA");
 }
 
-const inputCls = "h-11 w-full rounded-xl border border-line bg-paper px-3 text-[15px]";
+const inputCls = "h-11 w-full rounded-md border border-line bg-white px-3 text-[15px]";
 
 export function BookingFormCard({ form }: { form: BookingFormData }) {
   const { s, hotel, onBooked } = useApp();
@@ -95,8 +95,8 @@ export function BookingFormCard({ form }: { form: BookingFormData }) {
 
   if (status === "sent") {
     return (
-      <div role="status" className="rise rounded-2xl border border-accent/40 bg-card p-4">
-        <p className="flex items-center gap-2 font-display text-2xl text-accent-text">
+      <div role="status" className="rise pc-card p-4">
+        <p className="pc-title flex items-center gap-2 text-xl">
           <CircleCheck aria-hidden className="size-6" strokeWidth={1.75} />
           {s.fSent}
         </p>
@@ -111,15 +111,15 @@ export function BookingFormCard({ form }: { form: BookingFormData }) {
 
   const field = (label: string, control: React.ReactNode) => (
     <label className="block space-y-1">
-      <span className="text-xs font-medium text-muted">{label}</span>
+      <span className="text-xs text-muted">{label}</span>
       {control}
     </label>
   );
 
   return (
-    <form onSubmit={submit} className="space-y-3.5 rounded-2xl border border-line bg-card p-4">
+    <form onSubmit={submit} className="pc-card space-y-3.5 p-4">
       <div>
-        <h3 className="font-display text-2xl leading-tight">{form.item_name}</h3>
+        <h3 className="pc-title text-xl leading-tight">{form.item_name}</h3>
         <p className="mt-0.5 text-xs text-muted">
           {s.bookTitle} · {hotel.name}
         </p>
@@ -202,18 +202,11 @@ export function BookingFormCard({ form }: { form: BookingFormData }) {
         />,
       )}
       {error && (
-        <p
-          role="alert"
-          className="rounded-xl bg-red-500/10 px-3 py-2 text-sm text-red-700 dark:text-red-300"
-        >
+        <p role="alert" className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
           {error}
         </p>
       )}
-      <button
-        type="submit"
-        disabled={status === "sending"}
-        className="h-11 w-full rounded-full bg-accent text-sm font-medium text-accent-ink disabled:opacity-60"
-      >
+      <button type="submit" disabled={status === "sending"} className="pc-btn w-full">
         {status === "sending" ? s.fSubmitting : s.fSubmit}
       </button>
       <p className="sr-only">

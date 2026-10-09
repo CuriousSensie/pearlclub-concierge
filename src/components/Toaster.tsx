@@ -37,10 +37,10 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           <div
             key={t.id}
             className={clsx(
-              "pointer-events-auto max-w-sm flex items-center gap-2 rounded-full px-4 py-2.5 text-sm shadow-[var(--pop)]",
-              t.kind === "error" && "bg-red-700 text-white",
-              t.kind === "success" && "bg-[var(--ink)] text-[var(--paper)]",
-              t.kind === "info" && "bg-[var(--card)] text-[var(--ink)] ring-1 ring-[var(--line)]",
+              "pointer-events-auto max-w-sm flex items-center gap-2 rounded-full px-4 py-2.5 text-sm shadow-[var(--shadow-card)]",
+              t.kind === "error" && "bg-red-600 text-white",
+              t.kind === "success" && "bg-[var(--black)] text-white",
+              t.kind === "info" && "bg-white text-[var(--ink)] ring-1 ring-[var(--line)]",
             )}
           >
             {t.kind === "error" ? (

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import clsx from "clsx";
 import { useApp } from "./AppContext";
 import { useToast } from "./Toaster";
 import { sessionHeaders } from "@/lib/session";
@@ -24,7 +23,7 @@ function ChipRow<T extends string>({
 }) {
   return (
     <div>
-      <p className="mb-1.5 text-xs font-medium uppercase tracking-wide text-muted">{label}</p>
+      <p className="pc-title mb-2 text-sm">{label}</p>
       <div className="flex flex-wrap gap-2">
         {options.map((o) => (
           <button
@@ -32,12 +31,7 @@ function ChipRow<T extends string>({
             type="button"
             aria-pressed={selected(o)}
             onClick={() => onToggle(o)}
-            className={clsx(
-              "rounded-full border px-3.5 py-2 text-sm transition-colors",
-              selected(o)
-                ? "border-accent bg-accent text-accent-ink"
-                : "border-line bg-card text-ink",
-            )}
+            className="pc-chip"
           >
             {labels[o] ?? o}
           </button>
@@ -98,7 +92,7 @@ export function Onboarding({
         <button
           type="button"
           onClick={() => setEditing(true)}
-          className="font-medium text-accent-text underline"
+          className="font-medium text-ink underline underline-offset-4"
         >
           {s.onbEdit}
         </button>
@@ -109,11 +103,8 @@ export function Onboarding({
   const canSave = Boolean(draft.travel_style || draft.budget || draft.interests.length);
 
   return (
-    <section
-      aria-label={s.onbTitle}
-      className="rise space-y-4 rounded-2xl border border-line bg-card p-4"
-    >
-      <h2 className="font-display text-lg">{s.onbTitle}</h2>
+    <section aria-label={s.onbTitle} className="rise pc-card space-y-4 p-4">
+      <h2 className="font-display text-2xl italic leading-tight">{s.onbTitle}</h2>
       <ChipRow
         label={s.onbStyle}
         options={Object.keys(s.styles)}
@@ -143,12 +134,7 @@ export function Onboarding({
         }
       />
       <div className="flex items-center gap-3">
-        <button
-          type="button"
-          disabled={!canSave || saving}
-          onClick={save}
-          className="h-10 rounded-full bg-accent px-5 text-sm font-medium text-accent-ink disabled:opacity-40"
-        >
+        <button type="button" disabled={!canSave || saving} onClick={save} className="pc-btn">
           {s.save}
         </button>
         <button
