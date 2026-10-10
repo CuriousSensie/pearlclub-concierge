@@ -3,7 +3,7 @@ import { tool } from "ai";
 import { z } from "zod";
 import { buildPlan } from "./planner";
 import { getPlacesByIds, searchPlaces } from "./places";
-import { upsertProfile } from "./profile";
+import { upsertProfile } from "@/server/db/profiles";
 import { COVERED_CITIES, type Hotel } from "./hotels";
 import { CATEGORIES, TIME_SLOTS } from "./domain";
 import { idSchema } from "./schemas";

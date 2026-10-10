@@ -1,5 +1,5 @@
 import "server-only";
-import { getSupabase } from "@/lib/supabase";
+import { getSupabase } from "@/server/db/client";
 
 export async function savePlaces(sessionId: string, placeIds: string[]): Promise<void> {
   const { error } = await getSupabase()

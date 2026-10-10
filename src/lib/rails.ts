@@ -1,7 +1,7 @@
 import "server-only";
 import { haversineKm } from "./geo";
-import { PLACE_COLUMNS } from "./places";
-import { getSupabase } from "./supabase";
+import { PLACE_COLUMNS, rowToPlace } from "./places";
+import { getSupabase } from "@/server/db/client";
 import type { LiveContext, PartOfDay } from "./context";
 import type { Hotel } from "./hotels";
 import type { PlaceSummary, Place } from "@/types";
@@ -35,7 +35,7 @@ async function cityPlaces(citySlug: string): Promise<Place[]> {
     .not("image_url", "is", null)
     .not("lat", "is", null);
   if (error) throw new Error(`rails lookup failed: ${error.message}`);
-  const places = (data ?? []) as Place[];
+  const places = (data ?? []).map(rowToPlace);
   cityCache.set(citySlug, { at: Date.now(), places });
   return places;
 }

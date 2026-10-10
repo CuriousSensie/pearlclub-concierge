@@ -19,6 +19,9 @@ export type Category = (typeof CATEGORIES)[number];
 export const TIME_SLOTS = ["morning", "lunch", "afternoon", "evening"] as const;
 export type TimeSlot = (typeof TIME_SLOTS)[number];
 
+export const LANGUAGE_CODES = ["en", "es", "fr", "de", "ar", "ur"] as const;
+export type Language = (typeof LANGUAGE_CODES)[number];
+
 export const BOOKING_TYPES = ["hotel_service", "place"] as const;
 export type BookingType = (typeof BOOKING_TYPES)[number];
 

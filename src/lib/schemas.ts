@@ -1,6 +1,6 @@
 import type { UIMessage } from "ai";
 import { z } from "zod";
-import { BOOKING_TYPES, LIMITS, TOOL_NAMES } from "./domain";
+import { BOOKING_TYPES, LANGUAGE_CODES, LIMITS, TOOL_NAMES } from "./domain";
 
 /** Place and hotel-service ids (Dato ids, kebab-case slugs). Strict so they are safe in query filters. */
 export const idSchema = z.string().regex(/^[A-Za-z0-9_-]{1,40}$/, "Invalid id");
@@ -50,7 +50,7 @@ export type BookingInput = z.infer<typeof bookingInputSchema>;
 
 export const profilePatchSchema = z.object({
   name: z.string().trim().max(60).nullable().optional(),
-  language: z.string().max(5).optional(),
+  language: z.enum(LANGUAGE_CODES).optional(),
   travel_style: z.string().trim().max(30).nullable().optional(),
   budget: z.enum(["budget", "mid", "luxury"]).nullable().optional(),
   interests: z.array(z.string().trim().max(30)).max(10).optional(),

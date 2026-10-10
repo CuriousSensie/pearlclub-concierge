@@ -22,7 +22,8 @@ export type Place = {
 /** Place plus optional distance (km) from the guest/hotel, returned by search_places. */
 export type PlaceSummary = Place & { distance_km?: number | null };
 
-export type Language = "en" | "es" | "fr" | "de" | "ar" | "ur";
+export type { Language } from "@/lib/domain";
+import type { Language } from "@/lib/domain";
 
 export type Profile = {
   session_id: string;

@@ -1,15 +1,40 @@
 import "server-only";
 import { openai } from "@ai-sdk/openai";
 import { embed } from "ai";
-import { getSupabase } from "./supabase";
+import { getSupabase } from "@/server/db/client";
 import { haversineKm } from "./geo";
 import { hasOpenAI } from "./model";
 import { idSchema } from "./schemas";
+import type { Database } from "@/server/db/database.types";
 import type { Place, PlaceSummary } from "@/types";
 
 /** Every Place field except the (large) embedding vector, which must never leave the database. */
 export const PLACE_COLUMNS =
-  "id,name,city,city_slug,category,neighborhood,price_level,tags,description,lat,lng,image_url,pearlclub_url,curator,curator_slug,curator_image,curator_type";
+  "id,name,city,city_slug,category,neighborhood,price_level,tags,description,lat,lng,image_url,pearlclub_url,curator,curator_slug,curator_image,curator_type" as const;
+
+type PlaceRow = Pick<
+  Database["public"]["Tables"]["places"]["Row"],
+  | "id"
+  | "name"
+  | "city"
+  | "city_slug"
+  | "category"
+  | "neighborhood"
+  | "price_level"
+  | "tags"
+  | "description"
+  | "lat"
+  | "lng"
+  | "image_url"
+  | "pearlclub_url"
+  | "curator"
+  | "curator_slug"
+  | "curator_image"
+  | "curator_type"
+>;
+
+/** Normalises nullable database columns into the domain `Place`. */
+export const rowToPlace = (row: PlaceRow): Place => ({ ...row, tags: row.tags ?? [] });
 
 export type SearchParams = {
   city_slug: string;
@@ -88,7 +113,7 @@ export async function searchPlaces(p: SearchParams): Promise<PlaceSummary[]> {
     if (withKeywords && kws.length) q = q.or(kws.map((k) => `search_text.ilike.%${k}%`).join(","));
     const { data, error } = await q.limit(POOL_SIZE);
     if (error) throw new Error(`search_places failed: ${error.message}`);
-    return (data ?? []) as Place[];
+    return (data ?? []).map(rowToPlace);
   };
 
   // Vibe queries use embeddings; without a query (or if vectors are unavailable) fall back to keywords.
@@ -191,20 +216,21 @@ export async function getPlacesByIds(ids: string[]): Promise<Place[]> {
   if (!ids.length) return [];
   const { data, error } = await getSupabase().from("places").select(PLACE_COLUMNS).in("id", ids);
   if (error) throw new Error(`place lookup failed: ${error.message}`);
-  const byId = new Map((data as Place[]).map((pl) => [pl.id, pl]));
+  const byId = new Map((data ?? []).map((row) => [row.id, rowToPlace(row)]));
   // Preserve the requested order.
-  return ids.flatMap((id) => (byId.has(id) ? [byId.get(id) as Place] : []));
+  return ids.flatMap((id) => {
+    const place = byId.get(id);
+    return place ? [place] : [];
+  });
 }
 
+/** The guest's saved places, newest first. */
 export async function getSavedPlaces(sessionId: string): Promise<Place[]> {
   const { data, error } = await getSupabase()
     .from("saved_places")
-    .select(`created_at, places(${PLACE_COLUMNS})`)
+    .select("place_id")
     .eq("session_id", sessionId)
     .order("created_at", { ascending: false });
   if (error) throw new Error(`saved places lookup failed: ${error.message}`);
-  return (data ?? []).flatMap((row) => {
-    const place = row.places as unknown as Place | null;
-    return place ? [place] : [];
-  });
+  return getPlacesByIds((data ?? []).map((row) => row.place_id));
 }

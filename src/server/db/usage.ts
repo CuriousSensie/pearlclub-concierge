@@ -1,5 +1,5 @@
 import "server-only";
-import { getSupabase } from "@/lib/supabase";
+import { getSupabase } from "@/server/db/client";
 
 /** Atomically increments a named counter and returns its new value. */
 export async function incrementUsage(key: string): Promise<number> {

@@ -1,7 +1,6 @@
 import { LIMITS } from "@/lib/domain";
-import { isLanguage } from "@/lib/i18n";
 import { profilePatchSchema } from "@/lib/schemas";
-import { getProfile, replaceProfile } from "@/lib/profile";
+import { getProfile, replaceProfile } from "@/server/db/profiles";
 import { HttpError, errorResponse } from "@/server/http/errors";
 import { getRequestId, readJson, requireSessionId } from "@/server/http/guards";
 import { enforceReadLimit, enforceWriteLimit } from "@/server/http/rateLimit";
@@ -29,13 +28,7 @@ export async function POST(req: Request): Promise<Response> {
         parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; "),
       );
     }
-    if (parsed.data.language !== undefined && !isLanguage(parsed.data.language)) {
-      throw new HttpError(400, "language: Unsupported language");
-    }
-    const profile = await replaceProfile(
-      sessionId,
-      parsed.data as Parameters<typeof replaceProfile>[1],
-    );
+    const profile = await replaceProfile(sessionId, parsed.data);
     return Response.json({ profile });
   } catch (err) {
     return errorResponse(err, requestId);

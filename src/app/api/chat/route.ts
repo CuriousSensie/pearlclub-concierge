@@ -17,7 +17,7 @@ import { LIMITS } from "@/lib/domain";
 import { isLanguage } from "@/lib/i18n";
 import { parseChatMessages } from "@/lib/schemas";
 import { buildFollowupPrompt, buildSystemPrompt } from "@/lib/prompts";
-import { getProfile } from "@/lib/profile";
+import { getProfile } from "@/server/db/profiles";
 import { getSavedPlaces } from "@/lib/places";
 import { HttpError, errorResponse } from "@/server/http/errors";
 import { getRequestId, readJson, requireSessionId } from "@/server/http/guards";
