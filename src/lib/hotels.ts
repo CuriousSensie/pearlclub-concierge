@@ -95,26 +95,8 @@ export const HOTELS: Record<string, Hotel> = {
   },
 };
 
-/** Flag asset (Pearl Club's own, copied to /public/flags) and short code shown on place cards. */
-export const CITY_META: Record<string, { flag: string; code: string }> = {
-  london: { flag: "/flags/london.svg", code: "LDN" },
-  barcelona: { flag: "/flags/barcelona.svg", code: "BCN" },
-  berlin: { flag: "/flags/berlin.svg", code: "BER" },
-  paris: { flag: "/flags/paris.svg", code: "PAR" },
-  amsterdam: { flag: "/flags/amsterdam.svg", code: "AMS" },
-};
-
 export const DEFAULT_HOTEL_ID = "kensington-house";
 
 export function getHotel(id: string | null | undefined): Hotel {
   return (id && HOTELS[id]) || HOTELS[DEFAULT_HOTEL_ID];
 }
-
-/** Cities Pearl Club data currently covers (display names), used in the system prompt. */
-export const COVERED_CITIES: { slug: string; name: string }[] = [
-  { slug: "london", name: "London" },
-  { slug: "barcelona", name: "Barcelona" },
-  { slug: "berlin", name: "Berlin" },
-  { slug: "paris", name: "Paris" },
-  { slug: "amsterdam", name: "Amsterdam" },
-];

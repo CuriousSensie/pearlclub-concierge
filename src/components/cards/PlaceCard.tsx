@@ -7,12 +7,12 @@ import { useApp } from "@/components/chat/ConciergeContext";
 import { Curator, CuratorAvatar } from "@/components/cards/Curator";
 import { categoryEmoji } from "@/components/ui/emoji";
 import { formatDistance } from "@/lib/geo";
-import { CITY_META } from "@/lib/hotels";
+import { cityBySlug } from "@/lib/cities";
 import type { PlaceSummary } from "@/lib/types";
 
 /** Flag + city code, category emoji and price: the footer facts on every Pearl Club card. */
 function Facts({ place }: { place: PlaceSummary }) {
-  const city = CITY_META[place.city_slug];
+  const city = cityBySlug(place.city_slug);
   return (
     <div className="flex items-center gap-2.5">
       <span className="flex items-center gap-1.5">

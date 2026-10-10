@@ -1,4 +1,5 @@
 import "server-only";
+import { log } from "@/server/logger";
 
 const HIT_MS = 60 * 60_000;
 const MISS_MS = 60_000; // retry failures soon: the free geocoders are occasionally slow
@@ -39,10 +40,7 @@ export async function areaName(lat: number, lng: number): Promise<string | null>
       label = await lookup(lat, lng);
       if (label) break;
     } catch (err) {
-      console.warn(
-        `reverse geocode (${lookup.name}) failed:`,
-        err instanceof Error ? err.message : err,
-      );
+      log.warn("geocode.failed", { provider: lookup.name, err });
     }
   }
   if (cache.size > 500) cache.clear();

@@ -1,4 +1,5 @@
-import { COVERED_CITIES, type Hotel } from "@/lib/hotels";
+import { CITIES } from "@/lib/cities";
+import type { Hotel } from "@/lib/hotels";
 import type { LiveContext } from "@/server/context/liveContext";
 import { languageEnglishName } from "@/lib/i18n";
 import type { Language, Place, Profile, UserLocation } from "@/lib/types";
@@ -20,7 +21,7 @@ export function buildSystemPrompt({
   userLocation,
   live,
 }: PromptInput): string {
-  const cityList = COVERED_CITIES.map((c) => c.name).join(", ");
+  const cityList = CITIES.map((c) => c.name).join(", ");
   const w = live.weather;
   const weatherText = w
     ? `${w.tempC}°C and ${w.description}${w.rainy ? " (rain likely in the next hours)" : ""}`

@@ -1,7 +1,6 @@
 import "server-only";
 import { haversineKm } from "@/lib/geo";
-import { PLACE_COLUMNS, rowToPlace } from "@/server/db/places";
-import { getSupabase } from "@/server/db/client";
+import { listCityPlaces } from "@/server/db/places";
 import type { LiveContext, PartOfDay } from "@/server/context/liveContext";
 import type { Hotel } from "@/lib/hotels";
 import type { PlaceSummary, Place } from "@/lib/types";
@@ -21,25 +20,6 @@ const NOW_CATEGORIES: Record<PartOfDay, { dry: string[]; wet: string[] }> = {
   night: { dry: ["bar", "dinner"], wet: ["bar", "dinner"] },
 };
 const RAIL_SIZE = 6;
-const CACHE_MS = 10 * 60_000;
-const cityCache = new Map<string, { at: number; places: Place[] }>();
-
-/** All places with photos for a city; the table is static so cache it briefly. */
-async function cityPlaces(citySlug: string): Promise<Place[]> {
-  const hit = cityCache.get(citySlug);
-  if (hit && Date.now() - hit.at < CACHE_MS) return hit.places;
-  const { data, error } = await getSupabase()
-    .from("places")
-    .select(PLACE_COLUMNS)
-    .eq("city_slug", citySlug)
-    .not("image_url", "is", null)
-    .not("lat", "is", null);
-  if (error) throw new Error(`rails lookup failed: ${error.message}`);
-  const places = (data ?? []).map(rowToPlace);
-  cityCache.set(citySlug, { at: Date.now(), places });
-  return places;
-}
-
 /** Nearest `pool` places to the hotel, then a random `RAIL_SIZE` of them so rails stay fresh. */
 function pick(places: Place[], anchor: Anchor, pool = 24): PlaceSummary[] {
   const withDistance = places
@@ -63,7 +43,9 @@ export async function buildRails(
   ctx: LiveContext,
   anchor: Anchor = hotel,
 ): Promise<Rail[]> {
-  const all = await cityPlaces(hotel.city_slug);
+  const all = (await listCityPlaces(hotel.city_slug)).filter(
+    (p) => p.image_url && p.lat != null && p.lng != null,
+  );
   const rainy = ctx.weather?.rainy ?? false;
   const cats = NOW_CATEGORIES[ctx.partOfDay][rainy ? "wet" : "dry"];
   const base = { part: ctx.partOfDay, rainy };

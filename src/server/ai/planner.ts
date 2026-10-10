@@ -1,6 +1,7 @@
 import "server-only";
 import { haversineKm } from "@/lib/geo";
-import { getPlacesByIds, searchPlaces } from "@/server/db/places";
+import { getPlacesByIds } from "@/server/db/places";
+import { searchPlaces } from "@/server/search/search";
 import type { Hotel } from "@/lib/hotels";
 import type { PlaceSummary, TimeSlot } from "@/lib/types";
 
