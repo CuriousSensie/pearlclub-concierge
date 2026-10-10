@@ -3,26 +3,39 @@ import { haversineKm } from "@/lib/geo";
 import { areaName } from "@/lib/geocode";
 import { getHotel } from "@/lib/hotels";
 import { buildRails } from "@/lib/rails";
-import { enforceLookupLimit, errorResponse } from "@/lib/rateLimit";
+import { userLocationSchema } from "@/lib/schemas";
+import { errorResponse } from "@/server/http/errors";
+import { getRequestId } from "@/server/http/guards";
+import { enforceLookupLimit, enforceReadLimit } from "@/server/http/rateLimit";
 
 /** A guest further than this from the hotel is treated as "not here"; rails stay hotel-centred. */
 const NEARBY_KM = 30;
 
 /** Zero-LLM welcome content: live weather/time plus rails of real places for this moment. */
 export async function GET(req: Request): Promise<Response> {
+  const requestId = getRequestId(req);
   try {
+    await enforceReadLimit(req);
     const url = new URL(req.url);
     const hotel = getHotel(url.searchParams.get("hotel"));
-    const lat = Number(url.searchParams.get("lat"));
-    const lng = Number(url.searchParams.get("lng"));
-    const valid = url.searchParams.has("lat") && Math.abs(lat) <= 90 && Math.abs(lng) <= 180;
-    if (valid) await enforceLookupLimit(req);
-    const near = valid && haversineKm(hotel.lat, hotel.lng, lat, lng) <= NEARBY_KM;
-    const anchor = near ? { lat, lng } : { lat: hotel.lat, lng: hotel.lng };
+
+    const hasCoords = url.searchParams.has("lat") && url.searchParams.has("lng");
+    const parsed = hasCoords
+      ? userLocationSchema.safeParse({
+          lat: Number(url.searchParams.get("lat")),
+          lng: Number(url.searchParams.get("lng")),
+        })
+      : null;
+    const guest = parsed?.success ? parsed.data : null;
+    if (guest) await enforceLookupLimit(req);
+
+    const near =
+      guest !== null && haversineKm(hotel.lat, hotel.lng, guest.lat, guest.lng) <= NEARBY_KM;
+    const anchor = near && guest ? guest : { lat: hotel.lat, lng: hotel.lng };
 
     const [context, label] = await Promise.all([
       getLiveContext(hotel, new Date(), anchor),
-      near ? areaName(lat, lng) : Promise.resolve(null),
+      near && guest ? areaName(guest.lat, guest.lng) : Promise.resolve(null),
     ]);
     const rails = await buildRails(hotel, context, anchor);
     return Response.json(
@@ -42,6 +55,6 @@ export async function GET(req: Request): Promise<Response> {
       { headers: { "cache-control": "private, max-age=60" } },
     );
   } catch (err) {
-    return errorResponse(err);
+    return errorResponse(err, requestId);
   }
 }

@@ -36,7 +36,8 @@ export type Profile = {
   updated_at?: string;
 };
 
-export type TimeSlot = "morning" | "lunch" | "afternoon" | "evening";
+export type { TimeSlot, BookingType } from "@/lib/domain";
+import type { TimeSlot, BookingType } from "@/lib/domain";
 
 export type DayPlanStop = {
   time_slot: TimeSlot;
@@ -45,8 +46,6 @@ export type DayPlanStop = {
   /** Estimated walking minutes from the previous stop (or the hotel for the first). */
   walk_min?: number | null;
 };
-
-export type BookingType = "hotel_service" | "place";
 
 export type BookingForm = {
   booking_type: BookingType;

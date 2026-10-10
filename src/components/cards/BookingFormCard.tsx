@@ -32,6 +32,8 @@ export function BookingFormCard({ form }: { form: BookingFormData }) {
   const { s, hotel, onBooked } = useApp();
   const toast = useToast();
   const [contact] = useState(readContact);
+  // One key per form instance: a retry or double submit replays the same booking instead of duplicating it.
+  const [idempotencyKey] = useState(() => crypto.randomUUID());
   const [values, setValues] = useState({
     date: form.suggested_date ?? tomorrow(),
     time: form.suggested_time ?? "",
@@ -56,6 +58,7 @@ export function BookingFormCard({ form }: { form: BookingFormData }) {
         method: "POST",
         headers: { "content-type": "application/json", ...sessionHeaders() },
         body: JSON.stringify({
+          idempotency_key: idempotencyKey,
           hotel_id: form.hotel_id,
           booking_type: form.booking_type,
           item_id: form.item_id,

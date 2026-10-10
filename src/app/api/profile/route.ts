@@ -1,36 +1,36 @@
-import { z } from "zod";
+import { LIMITS } from "@/lib/domain";
 import { isLanguage } from "@/lib/i18n";
+import { profilePatchSchema } from "@/lib/schemas";
 import { getProfile, replaceProfile } from "@/lib/profile";
-import { HttpError, assertBodySize, errorResponse, requireSessionId } from "@/lib/rateLimit";
-
-const profileSchema = z.object({
-  name: z.string().max(60).nullable().optional(),
-  language: z.string().refine(isLanguage, "Unsupported language").optional(),
-  travel_style: z.string().max(30).nullable().optional(),
-  budget: z.enum(["budget", "mid", "luxury"]).nullable().optional(),
-  interests: z.array(z.string().max(30)).max(10).optional(),
-  dietary: z.array(z.string().max(30)).max(10).optional(),
-  home_city: z.string().max(60).nullable().optional(),
-});
+import { HttpError, errorResponse } from "@/server/http/errors";
+import { getRequestId, readJson, requireSessionId } from "@/server/http/guards";
+import { enforceReadLimit, enforceWriteLimit } from "@/server/http/rateLimit";
 
 export async function GET(req: Request): Promise<Response> {
+  const requestId = getRequestId(req);
   try {
-    return Response.json({ profile: await getProfile(requireSessionId(req)) });
+    const sessionId = requireSessionId(req);
+    await enforceReadLimit(req);
+    return Response.json({ profile: await getProfile(sessionId) });
   } catch (err) {
-    return errorResponse(err);
+    return errorResponse(err, requestId);
   }
 }
 
 export async function POST(req: Request): Promise<Response> {
+  const requestId = getRequestId(req);
   try {
     const sessionId = requireSessionId(req);
-    assertBodySize(req);
-    const parsed = profileSchema.safeParse(await req.json().catch(() => null));
+    await enforceWriteLimit(req);
+    const parsed = profilePatchSchema.safeParse(await readJson(req, LIMITS.writeBodyBytes));
     if (!parsed.success) {
       throw new HttpError(
         400,
         parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; "),
       );
+    }
+    if (parsed.data.language !== undefined && !isLanguage(parsed.data.language)) {
+      throw new HttpError(400, "language: Unsupported language");
     }
     const profile = await replaceProfile(
       sessionId,
@@ -38,6 +38,6 @@ export async function POST(req: Request): Promise<Response> {
     );
     return Response.json({ profile });
   } catch (err) {
-    return errorResponse(err);
+    return errorResponse(err, requestId);
   }
 }

@@ -1,28 +1,28 @@
-import { z } from "zod";
-import { getSupabase } from "@/lib/supabase";
+import { LIMITS } from "@/lib/domain";
 import { getPlacesByIds, getSavedPlaces } from "@/lib/places";
-import { HttpError, assertBodySize, errorResponse, requireSessionId } from "@/lib/rateLimit";
-
-const saveSchema = z
-  .object({
-    place_id: z.string().min(1).optional(),
-    place_ids: z.array(z.string().min(1)).max(20).optional(),
-  })
-  .refine((v) => v.place_id || v.place_ids?.length, "place_id or place_ids is required");
+import { idSchema, saveRequestSchema } from "@/lib/schemas";
+import { removeSavedPlace, savePlaces } from "@/server/db/saves";
+import { HttpError, errorResponse } from "@/server/http/errors";
+import { getRequestId, readJson, requireSessionId } from "@/server/http/guards";
+import { enforceReadLimit, enforceWriteLimit } from "@/server/http/rateLimit";
 
 export async function GET(req: Request): Promise<Response> {
+  const requestId = getRequestId(req);
   try {
-    return Response.json({ places: await getSavedPlaces(requireSessionId(req)) });
+    const sessionId = requireSessionId(req);
+    await enforceReadLimit(req);
+    return Response.json({ places: await getSavedPlaces(sessionId) });
   } catch (err) {
-    return errorResponse(err);
+    return errorResponse(err, requestId);
   }
 }
 
 export async function POST(req: Request): Promise<Response> {
+  const requestId = getRequestId(req);
   try {
     const sessionId = requireSessionId(req);
-    assertBodySize(req);
-    const parsed = saveSchema.safeParse(await req.json().catch(() => null));
+    await enforceWriteLimit(req);
+    const parsed = saveRequestSchema.safeParse(await readJson(req, LIMITS.writeBodyBytes));
     if (!parsed.success)
       throw new HttpError(400, parsed.error.issues.map((i) => i.message).join("; "));
 
@@ -32,35 +32,26 @@ export async function POST(req: Request): Promise<Response> {
         ...(parsed.data.place_id ? [parsed.data.place_id] : []),
       ]),
     ];
-    const places = await getPlacesByIds(ids);
-    if (places.length !== ids.length) throw new HttpError(400, "One or more places do not exist");
-
-    const { error } = await getSupabase()
-      .from("saved_places")
-      .upsert(
-        ids.map((place_id) => ({ session_id: sessionId, place_id })),
-        { onConflict: "session_id,place_id" },
-      );
-    if (error) throw new Error(`save failed: ${error.message}`);
+    if ((await getPlacesByIds(ids)).length !== ids.length) {
+      throw new HttpError(400, "One or more places do not exist");
+    }
+    await savePlaces(sessionId, ids);
     return Response.json({ saved: ids }, { status: 201 });
   } catch (err) {
-    return errorResponse(err);
+    return errorResponse(err, requestId);
   }
 }
 
 export async function DELETE(req: Request): Promise<Response> {
+  const requestId = getRequestId(req);
   try {
     const sessionId = requireSessionId(req);
-    const placeId = new URL(req.url).searchParams.get("place_id");
-    if (!placeId) throw new HttpError(400, "place_id query param is required");
-    const { error } = await getSupabase()
-      .from("saved_places")
-      .delete()
-      .eq("session_id", sessionId)
-      .eq("place_id", placeId);
-    if (error) throw new Error(`unsave failed: ${error.message}`);
-    return Response.json({ removed: placeId });
+    await enforceWriteLimit(req);
+    const placeId = idSchema.safeParse(new URL(req.url).searchParams.get("place_id"));
+    if (!placeId.success) throw new HttpError(400, "place_id query param is required");
+    await removeSavedPlace(sessionId, placeId.data);
+    return Response.json({ removed: placeId.data });
   } catch (err) {
-    return errorResponse(err);
+    return errorResponse(err, requestId);
   }
 }

@@ -5,7 +5,9 @@ import { buildPlan } from "./planner";
 import { getPlacesByIds, searchPlaces } from "./places";
 import { upsertProfile } from "./profile";
 import { COVERED_CITIES, type Hotel } from "./hotels";
-import type { PlaceSummary, Profile, TimeSlot, UserLocation } from "@/types";
+import { CATEGORIES, TIME_SLOTS } from "./domain";
+import { idSchema } from "./schemas";
+import type { PlaceSummary, Profile, UserLocation } from "@/types";
 
 export type ToolContext = {
   sessionId: string;
@@ -17,12 +19,6 @@ export type ToolContext = {
 };
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
-const TIME_SLOTS = [
-  "morning",
-  "lunch",
-  "afternoon",
-  "evening",
-] as const satisfies readonly TimeSlot[];
 const citySlug = z
   .string()
   .optional()
@@ -52,22 +48,7 @@ export function createTools(ctx: ToolContext) {
         "Search Pearl Club's curated places. The ONLY source of place recommendations. Returns real places with ids.",
       inputSchema: z.object({
         city_slug: citySlug,
-        category: z
-          .enum([
-            "cafe",
-            "bakery",
-            "breakfast",
-            "lunch",
-            "dinner",
-            "bar",
-            "outdoor-drinks",
-            "arts-culture",
-            "market",
-            "stay",
-            "shop",
-            "other",
-          ])
-          .optional(),
+        category: z.enum(CATEGORIES).optional(),
         price_max: z
           .number()
           .int()
@@ -135,7 +116,7 @@ export function createTools(ctx: ToolContext) {
 
     get_place_details: tool({
       description: "Get full details of one place by id (from a previous search_places result).",
-      inputSchema: z.object({ place_id: z.string() }),
+      inputSchema: z.object({ place_id: idSchema }),
       execute: async ({ place_id }) => {
         const [place] = await getPlacesByIds([place_id]);
         return place ? { place } : { error: "Place not found" };
@@ -157,7 +138,7 @@ export function createTools(ctx: ToolContext) {
         "Prepare a booking REQUEST form for the guest to review and submit. Does NOT book anything. Use a hotel service id from get_hotel_services, or a place id from search_places.",
       inputSchema: z.object({
         booking_type: z.enum(["hotel_service", "place"]),
-        item_id: z.string(),
+        item_id: idSchema,
         item_name: z.string(),
         suggested_date: z.string().regex(ISO_DATE).optional().describe("YYYY-MM-DD"),
         suggested_time: z.string().max(20).optional().describe("HH:MM, 24h"),
@@ -232,8 +213,11 @@ export function createTools(ctx: ToolContext) {
           .optional()
           .describe("Optional mood or interests, e.g. 'quiet, bookish, vegetarian'"),
         slots: z.array(z.enum(TIME_SLOTS)).optional().describe("Defaults to all four slots"),
-        keep: z.array(z.object({ time_slot: z.enum(TIME_SLOTS), place_id: z.string() })).optional(),
-        exclude_ids: z.array(z.string()).optional(),
+        keep: z
+          .array(z.object({ time_slot: z.enum(TIME_SLOTS), place_id: idSchema }))
+          .max(4)
+          .optional(),
+        exclude_ids: z.array(idSchema).max(20).optional(),
       }),
       execute: async ({ city_slug, date, theme, vibe, slots, keep, exclude_ids }) => {
         const city = validCity(city_slug);
@@ -281,7 +265,7 @@ export function createTools(ctx: ToolContext) {
     show_map: tool({
       description:
         "Show places on a map. Only needed outside plan_day, which already includes a map.",
-      inputSchema: z.object({ place_ids: z.array(z.string()).min(1).max(12) }),
+      inputSchema: z.object({ place_ids: z.array(idSchema).min(1).max(12) }),
       execute: async ({ place_ids }) => {
         const places = (await getPlacesByIds(place_ids)).filter(
           (p) => p.lat != null && p.lng != null,

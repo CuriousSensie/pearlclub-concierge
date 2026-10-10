@@ -10,41 +10,26 @@ import {
   type ModelMessage,
   type UIMessage,
 } from "ai";
-import { z } from "zod";
 import { getLiveContext } from "@/lib/context";
 import { pickFastModel, pickModel } from "@/lib/model";
 import { getHotel } from "@/lib/hotels";
+import { LIMITS } from "@/lib/domain";
 import { isLanguage } from "@/lib/i18n";
+import { parseChatMessages } from "@/lib/schemas";
 import { buildFollowupPrompt, buildSystemPrompt } from "@/lib/prompts";
 import { getProfile } from "@/lib/profile";
 import { getSavedPlaces } from "@/lib/places";
-import {
-  HttpError,
-  MAX_HISTORY_MESSAGES,
-  MAX_INPUT_CHARS,
-  assertBodySize,
-  enforceRateLimit,
-  errorResponse,
-  requireSessionId,
-} from "@/lib/rateLimit";
+import { HttpError, errorResponse } from "@/server/http/errors";
+import { getRequestId, readJson, requireSessionId } from "@/server/http/guards";
+import { enforceChatLimit } from "@/server/http/rateLimit";
+import { log } from "@/server/logger";
 import { createTools } from "@/lib/tools";
 
 export const maxDuration = 30;
 
-const bodySchema = z.object({
-  messages: z
-    .array(z.custom<UIMessage>((m) => typeof m === "object" && m !== null && "parts" in m))
-    .min(1),
-  hotelId: z.string().optional(),
-  language: z.string().optional(),
-  userLocation: z
-    .object({ lat: z.number().min(-90).max(90), lng: z.number().min(-180).max(180) })
-    .nullish(),
-});
-
 /** Keep the last N messages (starting on a user turn) and cap user text length. */
 function prepareMessages(messages: UIMessage[]): UIMessage[] {
-  let recent = messages.slice(-MAX_HISTORY_MESSAGES);
+  let recent = messages.slice(-LIMITS.historyMessages);
   const firstUser = recent.findIndex((m) => m.role === "user");
   recent = firstUser > 0 ? recent.slice(firstUser) : recent;
   return recent.map((m) =>
@@ -53,7 +38,7 @@ function prepareMessages(messages: UIMessage[]): UIMessage[] {
       : {
           ...m,
           parts: m.parts.map((p) =>
-            p.type === "text" ? { ...p, text: p.text.slice(0, MAX_INPUT_CHARS) } : p,
+            p.type === "text" ? { ...p, text: p.text.slice(0, LIMITS.inputChars) } : p,
           ),
         },
   );
@@ -85,19 +70,19 @@ function summarizeTurn(messages: ModelMessage[]): string {
 }
 
 export async function POST(req: Request): Promise<Response> {
+  const requestId = getRequestId(req);
+  const startedAt = Date.now();
   try {
     const sessionId = requireSessionId(req);
-    assertBodySize(req);
-
-    const parsed = bodySchema.safeParse(await req.json().catch(() => null));
-    if (!parsed.success) throw new HttpError(400, "Invalid request body");
-    const { messages, hotelId, userLocation } = parsed.data;
-    const language = isLanguage(parsed.data.language) ? parsed.data.language : "en";
+    const body = parseChatMessages(await readJson(req, LIMITS.chatBodyBytes));
+    if (!body) throw new HttpError(400, "Invalid request body");
+    const { messages, hotelId, userLocation } = body;
+    const language = isLanguage(body.language) ? body.language : "en";
 
     const hotel = getHotel(hotelId);
     // Independent lookups run together; the rate-limit check throws before any model work starts.
     const [, profile, savedPlaces, live] = await Promise.all([
-      enforceRateLimit(req, sessionId),
+      enforceChatLimit(req, sessionId),
       getProfile(sessionId),
       getSavedPlaces(sessionId),
       getLiveContext(hotel),
@@ -117,7 +102,7 @@ export async function POST(req: Request): Promise<Response> {
 
     const stream = createUIMessageStream({
       onError: (err) => {
-        console.error("chat stream error", err);
+        log.error("chat.stream_error", { requestId, err });
         // Surface provider rate limits distinctly so the UI can say "busy" instead of "broken".
         return APICallError.isInstance(err) && err.statusCode === 429
           ? "model_busy"
@@ -147,6 +132,17 @@ export async function POST(req: Request): Promise<Response> {
           toUIMessageStream({ stream: answer.stream, sendStart: false, sendFinish: false }),
         );
         const answerMessages = await answer.responseMessages;
+        const [usage, steps] = await Promise.all([answer.totalUsage, answer.steps]);
+        log.info("chat.turn", {
+          requestId,
+          session: sessionId.slice(0, 6),
+          hotel: hotel.id,
+          language,
+          model: model.modelId,
+          tools: steps.flatMap((step) => step.toolCalls.map((call) => call.toolName)),
+          usage,
+          ms: Date.now() - startedAt,
+        });
 
         // Pass 2: follow-up chips, forced so every turn has them regardless of model compliance.
         const followups = streamText({
@@ -168,8 +164,8 @@ export async function POST(req: Request): Promise<Response> {
       },
     });
 
-    return createUIMessageStreamResponse({ stream });
+    return createUIMessageStreamResponse({ stream, headers: { "x-request-id": requestId } });
   } catch (err) {
-    return errorResponse(err);
+    return errorResponse(err, requestId);
   }
 }

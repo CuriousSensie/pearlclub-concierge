@@ -3,6 +3,8 @@ import { openai } from "@ai-sdk/openai";
 import { embed } from "ai";
 import { getSupabase } from "./supabase";
 import { haversineKm } from "./geo";
+import { hasOpenAI } from "./model";
+import { idSchema } from "./schemas";
 import type { Place, PlaceSummary } from "@/types";
 
 /** Every Place field except the (large) embedding vector, which must never leave the database. */
@@ -19,6 +21,8 @@ export type SearchParams = {
   limit: number;
   excludeIds?: string[];
   interests?: string[];
+  /** Source of randomness for tie-breaking; injectable so tests are deterministic. */
+  random?: () => number;
 };
 
 const POOL_SIZE = 200;
@@ -57,10 +61,10 @@ function keywords(query: string | undefined): string[] {
     .slice(0, 6);
 }
 
-function shuffle<T>(items: T[]): T[] {
+function shuffle<T>(items: T[], random: () => number): T[] {
   const a = [...items];
   for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = Math.floor(random() * (i + 1));
     [a[i], a[j]] = [a[j], a[i]];
   }
   return a;
@@ -68,6 +72,8 @@ function shuffle<T>(items: T[]): T[] {
 
 export async function searchPlaces(p: SearchParams): Promise<PlaceSummary[]> {
   const kws = keywords(p.query);
+  // Only well-formed ids are interpolated into the PostgREST filter below.
+  const excludeIds = (p.excludeIds ?? []).filter((id) => idSchema.safeParse(id).success);
 
   const run = async (withKeywords: boolean, ignoreTags = false): Promise<Place[]> => {
     let q = getSupabase().from("places").select(PLACE_COLUMNS).eq("city_slug", p.city_slug);
@@ -78,7 +84,7 @@ export async function searchPlaces(p: SearchParams): Promise<PlaceSummary[]> {
         "tags",
         p.tags.map((t) => t.toLowerCase().replace(/^#/, "")),
       );
-    if (p.excludeIds?.length) q = q.not("id", "in", `(${p.excludeIds.join(",")})`);
+    if (excludeIds.length) q = q.not("id", "in", `(${excludeIds.join(",")})`);
     if (withKeywords && kws.length) q = q.or(kws.map((k) => `search_text.ilike.%${k}%`).join(","));
     const { data, error } = await q.limit(POOL_SIZE);
     if (error) throw new Error(`search_places failed: ${error.message}`);
@@ -102,10 +108,10 @@ export async function searchPlaces(p: SearchParams): Promise<PlaceSummary[]> {
   }
 
   const simValues = sims ? [...sims.values()] : [];
-  const simMin = Math.min(...simValues);
-  const simRange = Math.max(...simValues) - simMin || 1;
+  const simMin = simValues.length ? Math.min(...simValues) : 0;
+  const simRange = simValues.length ? Math.max(...simValues) - simMin || 1 : 1;
   const interests = (p.interests ?? []).map((i) => i.toLowerCase());
-  const scored = shuffle(rows).map((place) => {
+  const scored = shuffle(rows, p.random ?? Math.random).map((place) => {
     const text = `${place.name} ${place.description ?? ""} ${place.tags.join(" ")}`.toLowerCase();
     const interestScore = interests.filter((i) => text.includes(i)).length;
     // Relevance in [0, 1]: normalised vector similarity, or keyword hits.
@@ -156,7 +162,7 @@ function embedQuery(query: string): Promise<number[]> {
 
 /** Top semantic matches (id -> cosine similarity), or null if vector search isn't available. */
 async function vectorMatches(p: SearchParams): Promise<Map<string, number> | null> {
-  if (Date.now() < vectorsRetryAt || !process.env.OPENAI_API_KEY || !p.query) return null;
+  if (Date.now() < vectorsRetryAt || !hasOpenAI() || !p.query) return null;
   try {
     const embedding = await embedQuery(p.query);
     const { data, error } = await getSupabase().rpc("match_places", {
@@ -164,7 +170,7 @@ async function vectorMatches(p: SearchParams): Promise<Map<string, number> | nul
       p_city: p.city_slug,
       p_category: p.category ?? null,
       p_price_max: p.price_max ?? null,
-      p_exclude: p.excludeIds ?? [],
+      p_exclude: (p.excludeIds ?? []).filter((id) => idSchema.safeParse(id).success),
       match_count: Math.max(40, p.limit * 6),
     });
     if (error) throw new Error(error.message);
@@ -201,24 +207,4 @@ export async function getSavedPlaces(sessionId: string): Promise<Place[]> {
     const place = row.places as unknown as Place | null;
     return place ? [place] : [];
   });
-}
-
-/**
- * Resolves references the model may give as either an id or (mistakenly) an exact place name.
- * Returns a map keyed by the reference as given; unresolved references are absent.
- */
-export async function resolvePlaces(refs: string[], citySlug: string): Promise<Map<string, Place>> {
-  const resolved = new Map<string, Place>();
-  for (const pl of await getPlacesByIds(refs)) resolved.set(pl.id, pl);
-  const missing = refs.filter((r) => !resolved.has(r));
-  if (missing.length) {
-    const { data, error } = await getSupabase()
-      .from("places")
-      .select(PLACE_COLUMNS)
-      .eq("city_slug", citySlug)
-      .in("name", missing);
-    if (error) throw new Error(`place name lookup failed: ${error.message}`);
-    for (const pl of (data ?? []) as Place[]) resolved.set(pl.name, pl);
-  }
-  return resolved;
 }
