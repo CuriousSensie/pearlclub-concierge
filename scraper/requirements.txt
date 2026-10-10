@@ -1,3 +1,3 @@
-httpx
-playwright
-beautifulsoup4
+# Only Playwright is needed: the Pearl Club pages call a GraphQL API from the browser, and the
+# scraper captures and replays that request. Pinned for reproducible runs (Python 3.11+).
+playwright==1.63.0
