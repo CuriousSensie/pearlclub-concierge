@@ -21,7 +21,7 @@ export function MapCard({
   numbered?: boolean;
   height?: number;
 }) {
-  const { hotel } = useApp();
+  const { hotel, s } = useApp();
   const container = useRef<HTMLDivElement>(null);
   const withCoords = places.filter((p) => p.lat != null && p.lng != null);
 
@@ -125,7 +125,7 @@ export function MapCard({
     <div
       ref={container}
       role="region"
-      aria-label="Map"
+      aria-label={s.showOnMap}
       style={{ height }}
       className="pc-card w-full overflow-hidden bg-strip"
     />

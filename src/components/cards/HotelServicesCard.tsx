@@ -21,7 +21,7 @@ export function HotelServicesCard({ services }: { services: HotelService[] }) {
           <div className="flex min-w-0 flex-1 flex-col gap-1.5">
             <div className="flex items-start justify-between gap-2">
               <h3 className="pc-title text-base leading-snug">{serviceName(s, svc.id)}</h3>
-              <span className="shrink-0 rounded-md border border-slate-300 px-1.5 text-[13px] leading-5 text-slate-500">
+              <span className="shrink-0 rounded-md border border-slate-300 px-1.5 text-[13px] leading-5 text-slate-600">
                 {servicePrice(s, svc)}
               </span>
             </div>

@@ -29,9 +29,9 @@ export function Header({
             priority
             className="h-9 w-auto sm:h-10"
           />
-          <p className="pc-title max-w-[70vw] truncate text-[11px] font-normal text-muted sm:border-s sm:border-line sm:ps-4 sm:text-xs">
+          <h1 className="pc-title max-w-[70vw] truncate text-[11px] font-normal text-muted sm:border-s sm:border-line sm:ps-4 sm:text-xs">
             {s.concierge} · {hotel.name}
-          </p>
+          </h1>
         </div>
         <div className="hidden items-center gap-3 sm:flex">
           <LanguageSelector value={lang} label={s.language} onChange={onLanguage} />

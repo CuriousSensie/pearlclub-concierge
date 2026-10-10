@@ -23,7 +23,7 @@ export function BottomNav({
     "flex h-14 w-14 flex-col items-center justify-center rounded-xl text-[22px] leading-none transition-colors active:bg-strip";
   return (
     <nav
-      aria-label="Concierge"
+      aria-label={s.concierge}
       className="flex items-center justify-around border-t border-line bg-white px-2 pb-[env(safe-area-inset-bottom)] sm:hidden"
     >
       <button

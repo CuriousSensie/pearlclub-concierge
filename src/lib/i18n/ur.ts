@@ -1,8 +1,6 @@
 import type { Strings } from "./types";
-import { en } from "./en";
 
 export const ur: Strings = {
-  ...en,
   greeting: "{hotel} میں خوش آمدید",
   welcomeSub:
     "میں آپ کا کنسیئرج ہوں۔ مقامی پسندیدہ جگہیں پوچھیں، دن کا منصوبہ بنائیں یا کچھ بک کریں۔",

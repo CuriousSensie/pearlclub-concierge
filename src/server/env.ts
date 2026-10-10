@@ -11,50 +11,55 @@ const positiveInt = (fallback: number) =>
     z.coerce.number().int().positive().default(fallback),
   );
 
-const schema = z
-  .object({
-    NEXT_PUBLIC_SUPABASE_URL: z.url(),
-    SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
+const schema = z.object({
+  NEXT_PUBLIC_SUPABASE_URL: z.url(),
+  SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
 
-    OPENAI_API_KEY: optional(z.string().min(1)),
-    OPENAI_MODEL: optional(z.string().min(1)),
-    OPENAI_FAST_MODEL: optional(z.string().min(1)),
-    GOOGLE_GENERATIVE_AI_API_KEY: optional(z.string().min(1)),
-    AI_MODELS: optional(z.string()),
+  OPENAI_API_KEY: optional(z.string().min(1)),
+  OPENAI_MODEL: optional(z.string().min(1)),
+  OPENAI_FAST_MODEL: optional(z.string().min(1)),
+  GOOGLE_GENERATIVE_AI_API_KEY: optional(z.string().min(1)),
+  AI_MODELS: optional(z.string()),
 
-    MAX_MESSAGES_PER_SESSION: positiveInt(40),
-    MAX_MESSAGES_PER_IP_PER_DAY: positiveInt(80),
-    MAX_MESSAGES_PER_DAY: positiveInt(1500),
-    MAX_LOOKUPS_PER_IP_PER_DAY: positiveInt(60),
-    MAX_WRITES_PER_IP_PER_DAY: positiveInt(300),
-    ENFORCE_DAILY_LIMITS: optional(z.enum(["true", "false"])),
+  MAX_MESSAGES_PER_SESSION: positiveInt(40),
+  MAX_MESSAGES_PER_IP_PER_DAY: positiveInt(80),
+  MAX_MESSAGES_PER_DAY: positiveInt(1500),
+  MAX_LOOKUPS_PER_IP_PER_DAY: positiveInt(60),
+  MAX_WRITES_PER_IP_PER_DAY: positiveInt(300),
+  ENFORCE_DAILY_LIMITS: optional(z.enum(["true", "false"])),
 
-    /** Protects /api/cron/*; Vercel sends it as a Bearer token. */
-    CRON_SECRET: optional(z.string().min(16)),
-    NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
-  })
-  .superRefine((env, ctx) => {
-    const hasOpenAI = Boolean(env.OPENAI_API_KEY && env.OPENAI_MODEL);
-    const hasGemini = Boolean(env.GOOGLE_GENERATIVE_AI_API_KEY && env.AI_MODELS);
-    if (!hasOpenAI && !hasGemini) {
-      ctx.addIssue({
-        code: "custom",
-        message:
-          "Configure a model: OPENAI_API_KEY + OPENAI_MODEL, or GOOGLE_GENERATIVE_AI_API_KEY + AI_MODELS",
-      });
-    }
-  });
+  /** Protects /api/cron/*; Vercel sends it as a Bearer token. */
+  CRON_SECRET: optional(z.string().min(16)),
+  NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
+});
+
+/** A model must be configured: OpenAI (key + model) or Gemini (key + model list). */
+const modelProblem = (env: Record<string, string | undefined>): string | null => {
+  const filled = (v: string | undefined) => Boolean(v && v.trim());
+  const hasOpenAI = filled(env.OPENAI_API_KEY) && filled(env.OPENAI_MODEL);
+  const hasGemini = filled(env.GOOGLE_GENERATIVE_AI_API_KEY) && filled(env.AI_MODELS);
+  return hasOpenAI || hasGemini
+    ? null
+    : "Configure a model: OPENAI_API_KEY + OPENAI_MODEL, or GOOGLE_GENERATIVE_AI_API_KEY + AI_MODELS";
+};
 
 export type Env = z.infer<typeof schema>;
 
 /** Parses a variable bag; throws one readable error listing every problem. */
 export function parseEnv(source: Record<string, string | undefined>): Env {
   const result = schema.safeParse(source);
-  if (result.success) return result.data;
-  const problems = result.error.issues
-    .map((i) => `  - ${i.path.join(".") || "config"}: ${i.message}`)
-    .join("\n");
-  throw new Error(`Invalid environment configuration:\n${problems}`);
+  const problems = [
+    ...(result.success
+      ? []
+      : result.error.issues.map((i) => `${i.path.join(".") || "config"}: ${i.message}`)),
+    ...[modelProblem(source)].filter((p): p is string => p !== null).map((p) => `config: ${p}`),
+  ];
+  if (!result.success || problems.length) {
+    throw new Error(
+      "Invalid environment configuration:\n" + problems.map((p) => `  - ${p}`).join("\n"),
+    );
+  }
+  return result.data;
 }
 
 let cached: Env | undefined;

@@ -1,8 +1,6 @@
 import type { Strings } from "./types";
-import { en } from "./en";
 
 export const fr: Strings = {
-  ...en,
   greeting: "Bienvenue à {hotel}",
   welcomeSub:
     "Je suis votre concierge. Demandez-moi des adresses locales, un programme ou une réservation.",

@@ -30,7 +30,7 @@ function Facts({ place }: { place: PlaceSummary }) {
         {categoryEmoji(place.category)}
       </span>
       {place.price_level ? (
-        <span className="rounded-md border border-slate-300 px-1.5 text-[13px] leading-5 text-slate-400">
+        <span className="rounded-md border border-slate-300 px-1.5 text-[13px] leading-5 text-slate-600">
           {"$".repeat(place.price_level)}
         </span>
       ) : null}
