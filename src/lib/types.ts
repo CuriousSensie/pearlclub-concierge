@@ -85,11 +85,24 @@ export type BookingFormData = BookingForm & {
   pearlclub_url?: string;
 };
 
-export type HotelServiceInfo = {
-  id: string;
-  name: string;
-  description: string;
-  price: string;
-  requiresTime: boolean;
-  icon: string;
+export type PartOfDay = "morning" | "lunch" | "afternoon" | "evening" | "night";
+export type Sky = "clear" | "cloudy" | "fog" | "rain" | "snow" | "storm";
+
+/** A row of places on the welcome screen (built on the server without a model call). */
+export type Rail = {
+  kind: "now" | "local" | "budget";
+  part: PartOfDay;
+  rainy: boolean;
+  places: PlaceSummary[];
+};
+
+/** Response of GET /api/discover. */
+export type DiscoverResponse = {
+  context: {
+    partOfDay: PartOfDay;
+    weekday: string;
+    weather: { tempC: number; sky: Sky } | null;
+    location: { label: string; shared: boolean };
+  };
+  rails: Rail[];
 };

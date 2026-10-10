@@ -111,4 +111,34 @@ export const ur: Strings = {
   thinking: "سوچ رہا ہوں…",
   language: "زبان",
   away: "دور",
+  bookPrompt: "میں {item} بک کرنا چاہتا ہوں",
+  swapPrompt: "اسٹاپ {n} ({slot}: {name}) کو کسی اور سے بدل دیں۔",
+  priceFrom: "{price} سے",
+  complimentary: "مفت",
+  services: {
+    "airport-transfer": {
+      name: "ایئرپورٹ ٹرانسفر",
+      description: "{airport} آنے یا جانے کے لیے نجی کار۔",
+    },
+    "spa-treatment": {
+      name: "اسپا ٹریٹمنٹ",
+      description: "ہمارے اسپا میں 60 منٹ کا مساج یا فیشل۔",
+    },
+    "late-checkout": {
+      name: "دیر سے چیک آؤٹ",
+      description: "دستیابی کے مطابق دوپہر 4 بجے تک اپنا کمرہ رکھیں۔",
+    },
+    "room-service-breakfast": {
+      name: "کمرے میں ناشتہ",
+      description: "کانٹینینٹل یا مکمل ناشتہ آپ کے کمرے میں۔",
+    },
+    "restaurant-reservation": {
+      name: "ریستوران ریزرویشن میں مدد",
+      description: "ہم آپ کے لیے Pearl Club کی پسندیدہ جگہ پر میز محفوظ کرتے ہیں۔",
+    },
+    "private-walking-tour": {
+      name: "نجی گائیڈڈ واکنگ ٹور",
+      description: "مقامی گائیڈ کے ساتھ دو گھنٹے، آپ کی دلچسپیوں کے مطابق۔",
+    },
+  },
 };

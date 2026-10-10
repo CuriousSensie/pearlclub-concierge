@@ -1,7 +1,7 @@
 import "server-only";
+import type { Sky } from "@/lib/types";
 import { log } from "@/server/logger";
 
-export type Sky = "clear" | "cloudy" | "fog" | "rain" | "snow" | "storm";
 export type Weather = { tempC: number; sky: Sky; rainy: boolean; description: string };
 
 const CACHE_MS = 15 * 60_000;

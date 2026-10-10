@@ -124,4 +124,34 @@ export const fr: Strings = {
   thinking: "Réflexion…",
   language: "Langue",
   away: "de distance",
+  bookPrompt: "Je voudrais réserver {item}",
+  swapPrompt: "Remplace l'étape {n} ({slot} : {name}) par autre chose.",
+  priceFrom: "à partir de {price}",
+  complimentary: "Offert",
+  services: {
+    "airport-transfer": {
+      name: "Transfert aéroport",
+      description: "Voiture privée vers ou depuis {airport}.",
+    },
+    "spa-treatment": {
+      name: "Soin spa",
+      description: "Massage ou soin du visage de 60 minutes dans notre spa.",
+    },
+    "late-checkout": {
+      name: "Départ tardif",
+      description: "Gardez votre chambre jusqu'à 16 h, selon disponibilité.",
+    },
+    "room-service-breakfast": {
+      name: "Petit-déjeuner en chambre",
+      description: "Petit-déjeuner continental ou complet servi dans votre chambre.",
+    },
+    "restaurant-reservation": {
+      name: "Aide à la réservation de restaurant",
+      description: "Nous vous réservons une table dans une adresse favorite de Pearl Club.",
+    },
+    "private-walking-tour": {
+      name: "Promenade guidée privée",
+      description: "Deux heures avec un guide local, selon vos centres d'intérêt.",
+    },
+  },
 };

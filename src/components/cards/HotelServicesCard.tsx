@@ -2,10 +2,12 @@
 
 import { useApp } from "@/components/chat/ConciergeContext";
 import { serviceEmoji } from "@/components/ui/emoji";
-import type { HotelServiceInfo } from "@/lib/types";
+import type { HotelService } from "@/lib/hotels";
+import { fill } from "@/lib/i18n";
+import { serviceDescription, serviceName, servicePrice } from "@/lib/services";
 
-export function HotelServicesCard({ services }: { services: HotelServiceInfo[] }) {
-  const { s, sendText } = useApp();
+export function HotelServicesCard({ services }: { services: HotelService[] }) {
+  const { s, hotel, sendText } = useApp();
   return (
     <ul className="grid gap-3 sm:grid-cols-2">
       {services.map((svc) => (
@@ -18,15 +20,15 @@ export function HotelServicesCard({ services }: { services: HotelServiceInfo[] }
           </span>
           <div className="flex min-w-0 flex-1 flex-col gap-1.5">
             <div className="flex items-start justify-between gap-2">
-              <h3 className="pc-title text-base leading-snug">{svc.name}</h3>
-              <span className="shrink-0 rounded-md border border-slate-300 px-1.5 text-[13px] leading-5 text-slate-400">
-                {svc.price}
+              <h3 className="pc-title text-base leading-snug">{serviceName(s, svc.id)}</h3>
+              <span className="shrink-0 rounded-md border border-slate-300 px-1.5 text-[13px] leading-5 text-slate-500">
+                {servicePrice(s, svc)}
               </span>
             </div>
-            <p className="text-sm leading-5 text-muted">{svc.description}</p>
+            <p className="text-sm leading-5 text-muted">{serviceDescription(s, svc.id, hotel)}</p>
             <button
               type="button"
-              onClick={() => sendText(`I'd like to book ${svc.name}`)}
+              onClick={() => sendText(fill(s.bookPrompt, { item: serviceName(s, svc.id) }))}
               className="pc-btn pc-btn-sm mt-1 self-start"
             >
               {s.request}

@@ -123,4 +123,34 @@ export const es: Strings = {
   thinking: "Pensando…",
   language: "Idioma",
   away: "de distancia",
+  bookPrompt: "Quiero reservar {item}",
+  swapPrompt: "Cambia la parada {n} ({slot}: {name}) por otra opción.",
+  priceFrom: "desde {price}",
+  complimentary: "Cortesía",
+  services: {
+    "airport-transfer": {
+      name: "Traslado al aeropuerto",
+      description: "Coche privado hacia o desde {airport}.",
+    },
+    "spa-treatment": {
+      name: "Tratamiento de spa",
+      description: "Masaje o tratamiento facial de 60 minutos en nuestro spa.",
+    },
+    "late-checkout": {
+      name: "Salida tardía",
+      description: "Conserva tu habitación hasta las 16:00, según disponibilidad.",
+    },
+    "room-service-breakfast": {
+      name: "Desayuno en la habitación",
+      description: "Desayuno continental o completo servido en tu habitación.",
+    },
+    "restaurant-reservation": {
+      name: "Ayuda con reservas de restaurante",
+      description: "Te conseguimos mesa en un favorito de Pearl Club.",
+    },
+    "private-walking-tour": {
+      name: "Paseo guiado privado",
+      description: "Dos horas con un guía local, a medida de tus intereses.",
+    },
+  },
 };

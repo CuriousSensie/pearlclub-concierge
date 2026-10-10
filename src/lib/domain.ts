@@ -22,6 +22,16 @@ export type TimeSlot = (typeof TIME_SLOTS)[number];
 export const LANGUAGE_CODES = ["en", "es", "fr", "de", "ar", "ur"] as const;
 export type Language = (typeof LANGUAGE_CODES)[number];
 
+export const SERVICE_IDS = [
+  "airport-transfer",
+  "spa-treatment",
+  "late-checkout",
+  "room-service-breakfast",
+  "restaurant-reservation",
+  "private-walking-tour",
+] as const;
+export type ServiceId = (typeof SERVICE_IDS)[number];
+
 export const BOOKING_TYPES = ["hotel_service", "place"] as const;
 export type BookingType = (typeof BOOKING_TYPES)[number];
 

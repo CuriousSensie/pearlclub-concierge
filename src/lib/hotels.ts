@@ -1,10 +1,13 @@
+import type { ServiceId } from "./domain";
+
+/** Language-neutral service data. Names and descriptions live in the i18n dictionaries, keyed by `id`. */
 export type HotelService = {
-  id: string;
-  name: string;
-  description: string;
-  price: string;
-  requiresTime: boolean;
+  id: ServiceId;
+  /** Icon key understood by the UI (see components/ui/emoji.ts). */
   icon: string;
+  requiresTime: boolean;
+  /** Starting price in EUR, or null when the service is complimentary. */
+  priceFromEur: number | null;
 };
 
 export type Hotel = {
@@ -15,59 +18,19 @@ export type Hotel = {
   lat: number;
   lng: number;
   timezone: string;
+  /** Airport named in the airport-transfer description. */
+  airport: string;
   tagline: string;
   services: HotelService[];
 };
 
-const commonServices = (airport: string, spaPrice: string): HotelService[] => [
-  {
-    id: "airport-transfer",
-    name: "Airport transfer",
-    description: `Private car to or from ${airport}.`,
-    price: "from €65",
-    requiresTime: true,
-    icon: "car",
-  },
-  {
-    id: "spa-treatment",
-    name: "Spa treatment",
-    description: "60-minute massage or facial in our spa.",
-    price: spaPrice,
-    requiresTime: true,
-    icon: "spa",
-  },
-  {
-    id: "late-checkout",
-    name: "Late checkout",
-    description: "Keep your room until 4 pm, subject to availability.",
-    price: "from €40",
-    requiresTime: false,
-    icon: "clock",
-  },
-  {
-    id: "room-service-breakfast",
-    name: "Room-service breakfast",
-    description: "Continental or full breakfast delivered to your room.",
-    price: "from €28",
-    requiresTime: true,
-    icon: "breakfast",
-  },
-  {
-    id: "restaurant-reservation",
-    name: "Restaurant reservation assistance",
-    description: "We secure a table at a Pearl Club favourite for you.",
-    price: "Complimentary",
-    requiresTime: true,
-    icon: "dining",
-  },
-  {
-    id: "private-walking-tour",
-    name: "Private guided walking tour",
-    description: "Two hours with a local guide, tailored to your interests.",
-    price: "from €120",
-    requiresTime: true,
-    icon: "walk",
-  },
+const commonServices = (spaFromEur: number): HotelService[] => [
+  { id: "airport-transfer", icon: "car", requiresTime: true, priceFromEur: 65 },
+  { id: "spa-treatment", icon: "spa", requiresTime: true, priceFromEur: spaFromEur },
+  { id: "late-checkout", icon: "clock", requiresTime: false, priceFromEur: 40 },
+  { id: "room-service-breakfast", icon: "breakfast", requiresTime: true, priceFromEur: 28 },
+  { id: "restaurant-reservation", icon: "dining", requiresTime: true, priceFromEur: null },
+  { id: "private-walking-tour", icon: "walk", requiresTime: true, priceFromEur: 120 },
 ];
 
 export const HOTELS: Record<string, Hotel> = {
@@ -80,7 +43,8 @@ export const HOTELS: Record<string, Hotel> = {
     lng: -0.1745,
     timezone: "Europe/London",
     tagline: "A townhouse retreat in the heart of London",
-    services: commonServices("Heathrow", "from €95"),
+    airport: "Heathrow",
+    services: commonServices(95),
   },
   "casa-mar": {
     id: "casa-mar",
@@ -91,7 +55,8 @@ export const HOTELS: Record<string, Hotel> = {
     lng: 2.1734,
     timezone: "Europe/Madrid",
     tagline: "Seaside calm steps from the Gothic Quarter",
-    services: commonServices("El Prat", "from €85"),
+    airport: "El Prat",
+    services: commonServices(85),
   },
 };
 

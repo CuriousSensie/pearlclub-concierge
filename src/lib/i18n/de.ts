@@ -124,4 +124,34 @@ export const de: Strings = {
   thinking: "Denke nach…",
   language: "Sprache",
   away: "entfernt",
+  bookPrompt: "Ich möchte {item} buchen",
+  swapPrompt: "Tausche Stopp {n} ({slot}: {name}) gegen etwas anderes.",
+  priceFrom: "ab {price}",
+  complimentary: "Inklusive",
+  services: {
+    "airport-transfer": {
+      name: "Flughafentransfer",
+      description: "Privatwagen von oder nach {airport}.",
+    },
+    "spa-treatment": {
+      name: "Spa-Anwendung",
+      description: "60-minütige Massage oder Gesichtsbehandlung in unserem Spa.",
+    },
+    "late-checkout": {
+      name: "Später Check-out",
+      description: "Behalten Sie Ihr Zimmer bis 16 Uhr, je nach Verfügbarkeit.",
+    },
+    "room-service-breakfast": {
+      name: "Frühstück aufs Zimmer",
+      description: "Kontinentales oder volles Frühstück direkt ins Zimmer.",
+    },
+    "restaurant-reservation": {
+      name: "Restaurantreservierung",
+      description: "Wir sichern Ihnen einen Tisch in einem Pearl-Club-Favoriten.",
+    },
+    "private-walking-tour": {
+      name: "Private Stadtführung",
+      description: "Zwei Stunden mit einem lokalen Guide, auf Ihre Interessen abgestimmt.",
+    },
+  },
 };

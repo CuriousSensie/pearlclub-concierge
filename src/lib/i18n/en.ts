@@ -121,4 +121,34 @@ export const en: Strings = {
   thinking: "Thinking…",
   language: "Language",
   away: "away",
+  bookPrompt: "I'd like to book {item}",
+  swapPrompt: "Swap stop {n} ({slot}: {name}) for something different.",
+  priceFrom: "from {price}",
+  complimentary: "Complimentary",
+  services: {
+    "airport-transfer": {
+      name: "Airport transfer",
+      description: "Private car to or from {airport}.",
+    },
+    "spa-treatment": {
+      name: "Spa treatment",
+      description: "60-minute massage or facial in our spa.",
+    },
+    "late-checkout": {
+      name: "Late checkout",
+      description: "Keep your room until 4 pm, subject to availability.",
+    },
+    "room-service-breakfast": {
+      name: "Room-service breakfast",
+      description: "Continental or full breakfast delivered to your room.",
+    },
+    "restaurant-reservation": {
+      name: "Restaurant reservation assistance",
+      description: "We secure a table at a Pearl Club favourite for you.",
+    },
+    "private-walking-tour": {
+      name: "Private guided walking tour",
+      description: "Two hours with a local guide, tailored to your interests.",
+    },
+  },
 };

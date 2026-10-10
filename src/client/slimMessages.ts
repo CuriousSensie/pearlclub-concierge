@@ -36,7 +36,7 @@ function slimValue(value: unknown, key?: string): unknown {
  * place records for the UI; the server rebuilds a compact view for the model, so the heavy fields
  * (photos, links, coordinates) only inflate the request and can trip the body-size limit.
  */
-export function slimMessages(messages: UIMessage[]): UIMessage[] {
+export function slimMessages<M extends UIMessage>(messages: M[]): M[] {
   return messages.slice(-MAX_MESSAGES).map((m) =>
     m.role !== "assistant"
       ? m
@@ -45,7 +45,7 @@ export function slimMessages(messages: UIMessage[]): UIMessage[] {
           // Only `output` changes; the cast spares restating the SDK's large per-tool part union.
           parts: m.parts.map((p) =>
             p.type.startsWith("tool-") && "output" in p ? { ...p, output: slimValue(p.output) } : p,
-          ) as UIMessage["parts"],
+          ) as M["parts"],
         },
   );
 }

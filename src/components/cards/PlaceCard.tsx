@@ -7,6 +7,7 @@ import { useApp } from "@/components/chat/ConciergeContext";
 import { Curator, CuratorAvatar } from "@/components/cards/Curator";
 import { categoryEmoji } from "@/components/ui/emoji";
 import { formatDistance } from "@/lib/geo";
+import { fill } from "@/lib/i18n";
 import { cityBySlug } from "@/lib/cities";
 import type { PlaceSummary } from "@/lib/types";
 
@@ -82,7 +83,7 @@ export function PlaceCard({
   const book = (
     <button
       type="button"
-      onClick={() => sendText(`I'd like to book ${place.name}`)}
+      onClick={() => sendText(fill(s.bookPrompt, { item: place.name }))}
       className="pc-btn pc-btn-sm"
     >
       {s.book}

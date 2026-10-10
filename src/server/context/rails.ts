@@ -1,13 +1,11 @@
 import "server-only";
 import { haversineKm } from "@/lib/geo";
 import { listCityPlaces } from "@/server/db/places";
-import type { LiveContext, PartOfDay } from "@/server/context/liveContext";
+import type { LiveContext } from "@/server/context/liveContext";
 import type { Hotel } from "@/lib/hotels";
-import type { PlaceSummary, Place } from "@/lib/types";
+import type { PartOfDay, Place, PlaceSummary, Rail } from "@/lib/types";
 
 type Anchor = { lat: number; lng: number };
-export type RailKind = "now" | "local" | "budget";
-export type Rail = { kind: RailKind; part: PartOfDay; rainy: boolean; places: PlaceSummary[] };
 
 const NOW_CATEGORIES: Record<PartOfDay, { dry: string[]; wet: string[] }> = {
   morning: { dry: ["breakfast", "cafe", "bakery"], wet: ["breakfast", "cafe", "bakery"] },

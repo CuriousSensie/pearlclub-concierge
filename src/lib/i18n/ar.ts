@@ -117,4 +117,34 @@ export const ar: Strings = {
   thinking: "جارٍ التفكير…",
   language: "اللغة",
   away: "بعيداً",
+  bookPrompt: "أرغب في حجز {item}",
+  swapPrompt: "استبدل المحطة {n} ({slot}: {name}) بخيار مختلف.",
+  priceFrom: "ابتداءً من {price}",
+  complimentary: "مجاني",
+  services: {
+    "airport-transfer": {
+      name: "التوصيل إلى المطار",
+      description: "سيارة خاصة من أو إلى {airport}.",
+    },
+    "spa-treatment": {
+      name: "جلسة سبا",
+      description: "جلسة مساج أو عناية بالوجه لمدة 60 دقيقة في السبا الخاص بنا.",
+    },
+    "late-checkout": {
+      name: "مغادرة متأخرة",
+      description: "احتفظ بغرفتك حتى الساعة 4 عصراً، حسب التوفر.",
+    },
+    "room-service-breakfast": {
+      name: "إفطار في الغرفة",
+      description: "إفطار كونتيننتال أو كامل يُقدَّم في غرفتك.",
+    },
+    "restaurant-reservation": {
+      name: "المساعدة في حجز المطاعم",
+      description: "نؤمّن لك طاولة في أحد أماكن Pearl Club المفضلة.",
+    },
+    "private-walking-tour": {
+      name: "جولة مشي خاصة مع مرشد",
+      description: "ساعتان مع مرشد محلي، مصممة وفق اهتماماتك.",
+    },
+  },
 };

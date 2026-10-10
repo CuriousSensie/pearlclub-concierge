@@ -1,8 +1,8 @@
 import "server-only";
 import type { Hotel } from "@/lib/hotels";
+import type { PartOfDay } from "@/lib/types";
 import { getWeather, type Weather } from "./weather";
 
-export type PartOfDay = "morning" | "lunch" | "afternoon" | "evening" | "night";
 export type LiveContext = {
   partOfDay: PartOfDay;
   weekday: string;

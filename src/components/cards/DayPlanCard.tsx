@@ -74,7 +74,11 @@ export function DayPlanCard({
               type="button"
               onClick={() =>
                 sendText(
-                  `Swap stop ${i + 1} (${stop.time_slot}: ${stop.place.name}) for something different.`,
+                  fill(s.swapPrompt, {
+                    n: String(i + 1),
+                    slot: slotLabel[stop.time_slot],
+                    name: stop.place.name,
+                  }),
                 )
               }
               className="pc-chip mt-2.5 min-h-8 text-[13px]"

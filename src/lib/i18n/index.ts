@@ -8,6 +8,7 @@ import type { Strings } from "./types";
 import { ur } from "./ur";
 
 export { LANGUAGES, isLanguage, isRTL, languageEnglishName } from "./languages";
+export { en } from "./en";
 export type { Strings } from "./types";
 
 export const STRINGS: Record<Language, Strings> = { en, es, fr, de, ar, ur };

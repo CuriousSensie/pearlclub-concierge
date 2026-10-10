@@ -5,8 +5,9 @@ import { CircleCheck } from "lucide-react";
 import { useApp } from "@/components/chat/ConciergeContext";
 import { useToast } from "@/components/ui/Toaster";
 import { fill } from "@/lib/i18n";
-import { sessionHeaders } from "@/client/session";
-import type { Booking, BookingFormData } from "@/lib/types";
+import { bookedItemLabel } from "@/lib/services";
+import { ApiError, api } from "@/client/api";
+import type { BookingFormData } from "@/lib/types";
 
 const CONTACT_KEY = "pc_guest_contact";
 
@@ -54,30 +55,20 @@ export function BookingFormCard({ form }: { form: BookingFormData }) {
     setError(null);
     setStatus("sending");
     try {
-      const res = await fetch("/api/bookings", {
-        method: "POST",
-        headers: { "content-type": "application/json", ...sessionHeaders() },
-        body: JSON.stringify({
-          idempotency_key: idempotencyKey,
-          hotel_id: form.hotel_id,
-          booking_type: form.booking_type,
-          item_id: form.item_id,
-          item_name: form.item_name,
-          date: values.date,
-          time: values.time || null,
-          party_size: Number(values.party_size),
-          guest_name: values.guest_name,
-          guest_email: values.guest_email,
-          room_number: values.room_number || null,
-          notes: values.notes || null,
-        }),
+      const booking = await api.bookings.create({
+        idempotency_key: idempotencyKey,
+        hotel_id: form.hotel_id,
+        booking_type: form.booking_type,
+        item_id: form.item_id,
+        item_name: form.item_name,
+        date: values.date,
+        time: values.time || null,
+        party_size: Number(values.party_size),
+        guest_name: values.guest_name,
+        guest_email: values.guest_email,
+        room_number: values.room_number || null,
+        notes: values.notes || null,
       });
-      const data = (await res.json()) as { booking?: Booking; error?: string };
-      if (!res.ok || !data.booking) {
-        setError(data.error ?? s.errGeneric);
-        setStatus("idle");
-        return;
-      }
       try {
         window.localStorage.setItem(
           CONTACT_KEY,
@@ -88,10 +79,11 @@ export function BookingFormCard({ form }: { form: BookingFormData }) {
       }
       setStatus("sent");
       toast(s.toastBooked);
-      onBooked(data.booking);
+      onBooked(booking);
     } catch (err) {
       console.error("booking failed", err);
-      setError(s.errGeneric);
+      // Validation and limit messages come from the server in readable form; show them inline.
+      setError(err instanceof ApiError && err.status < 500 ? err.message : s.errGeneric);
       setStatus("idle");
     }
   }
@@ -104,7 +96,7 @@ export function BookingFormCard({ form }: { form: BookingFormData }) {
           {s.fSent}
         </p>
         <p className="mt-1 text-sm">
-          {form.item_name} · {values.date}
+          {bookedItemLabel(s, form)} · {values.date}
           {values.time && ` · ${values.time}`} · {values.party_size}
         </p>
         <p className="mt-1 text-sm text-muted">{s.fSentSub}</p>
@@ -122,7 +114,7 @@ export function BookingFormCard({ form }: { form: BookingFormData }) {
   return (
     <form onSubmit={submit} className="pc-card space-y-3.5 p-4">
       <div>
-        <h3 className="pc-title text-xl leading-tight">{form.item_name}</h3>
+        <h3 className="pc-title text-xl leading-tight">{bookedItemLabel(s, form)}</h3>
         <p className="mt-0.5 text-xs text-muted">
           {s.bookTitle} · {hotel.name}
         </p>
@@ -213,7 +205,7 @@ export function BookingFormCard({ form }: { form: BookingFormData }) {
         {status === "sending" ? s.fSubmitting : s.fSubmit}
       </button>
       <p className="sr-only">
-        {fill(s.bookingSubmitted, { item: form.item_name, date: values.date })}
+        {fill(s.bookingSubmitted, { item: bookedItemLabel(s, form), date: values.date })}
       </p>
     </form>
   );

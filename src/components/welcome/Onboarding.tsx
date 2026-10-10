@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useApp } from "@/components/chat/ConciergeContext";
 import { useToast } from "@/components/ui/Toaster";
-import { sessionHeaders } from "@/client/session";
+import { api } from "@/client/api";
 import type { Profile } from "@/lib/types";
 
 type Draft = { travel_style: string | null; budget: string | null; interests: string[] };
@@ -65,14 +65,8 @@ export function Onboarding({
   async function save() {
     setSaving(true);
     try {
-      const res = await fetch("/api/profile", {
-        method: "POST",
-        headers: { "content-type": "application/json", ...sessionHeaders() },
-        body: JSON.stringify({ ...draft, language: lang }),
-      });
-      const data = (await res.json()) as { profile?: Profile; error?: string };
-      if (!res.ok || !data.profile) throw new Error(data.error ?? "Request failed");
-      onSaved(data.profile);
+      const saved = await api.profile.update({ ...draft, language: lang });
+      onSaved(saved);
       setEditing(false);
       toast(s.toastPrefs);
     } catch (err) {

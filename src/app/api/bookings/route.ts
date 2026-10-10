@@ -1,5 +1,6 @@
 import { getHotel, HOTELS } from "@/lib/hotels";
 import { LIMITS } from "@/lib/domain";
+import { canonicalServiceName } from "@/lib/services";
 import { bookingInputSchema } from "@/lib/schemas";
 import { createBooking, listBookings } from "@/server/db/bookings";
 import { getPlacesByIds } from "@/server/db/places";
@@ -49,7 +50,7 @@ export async function POST(req: Request): Promise<Response> {
     if (input.booking_type === "hotel_service") {
       const service = hotel.services.find((s) => s.id === input.item_id);
       if (!service) throw new HttpError(400, "item_id: unknown hotel service");
-      itemName = service.name;
+      itemName = canonicalServiceName(service.id);
     } else {
       const [place] = await getPlacesByIds([input.item_id]);
       if (!place) throw new HttpError(400, "item_id: unknown place");

@@ -2,6 +2,7 @@ import { tool } from "ai";
 import { z } from "zod";
 import { BOOKING_TYPES } from "@/lib/domain";
 import { idSchema, isoDateSchema } from "@/lib/schemas";
+import { canonicalServiceName } from "@/lib/services";
 import { getPlacesByIds } from "@/server/db/places";
 import type { ToolContext } from "./context";
 
@@ -38,7 +39,7 @@ export const proposeBookingTool = ({ hotel }: ToolContext) =>
         return {
           form: {
             ...input,
-            item_name: service.name,
+            item_name: canonicalServiceName(service.id),
             requires_time: service.requiresTime,
             hotel_id: hotel.id,
           },

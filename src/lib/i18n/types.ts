@@ -1,3 +1,5 @@
+import type { ServiceId } from "@/lib/domain";
+
 /** Every UI string. Translations must provide each key (English is the base others spread over). */
 export type Strings = {
   greeting: string; // {hotel}
@@ -88,4 +90,9 @@ export type Strings = {
   thinking: string;
   language: string;
   away: string;
+  bookPrompt: string; // {item}
+  swapPrompt: string; // {n} {slot} {name}
+  priceFrom: string; // {price}
+  complimentary: string;
+  services: Record<ServiceId, { name: string; description: string }>;
 };

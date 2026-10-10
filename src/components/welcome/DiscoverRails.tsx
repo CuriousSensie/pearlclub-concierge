@@ -11,27 +11,10 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useApp } from "@/components/chat/ConciergeContext";
 import { PlaceCard } from "@/components/cards/PlaceCard";
-import type { PlaceSummary } from "@/lib/types";
-
-type Part = "morning" | "lunch" | "afternoon" | "evening" | "night";
-type Sky = "clear" | "cloudy" | "fog" | "rain" | "snow" | "storm";
-type Rail = {
-  kind: "now" | "local" | "budget";
-  part: Part;
-  rainy: boolean;
-  places: PlaceSummary[];
-};
-type Discover = {
-  context: {
-    partOfDay: Part;
-    weekday: string;
-    weather: { tempC: number; sky: Sky } | null;
-    location: { label: string; shared: boolean };
-  };
-  rails: Rail[];
-};
+import { useApp } from "@/components/chat/ConciergeContext";
+import { api } from "@/client/api";
+import type { DiscoverResponse, Rail, Sky } from "@/lib/types";
 
 const SKY_ICON: Record<Sky, LucideIcon> = {
   clear: Sun,
@@ -45,7 +28,7 @@ const SKY_ICON: Record<Sky, LucideIcon> = {
 /** Instant, model-free content for the first screen: live weather and rails of real places. */
 export function DiscoverRails() {
   const { hotel, lang, s, userLocation } = useApp();
-  const [data, setData] = useState<Discover | null>(null);
+  const [data, setData] = useState<DiscoverResponse | null>(null);
   const lat = userLocation?.lat;
   const lng = userLocation?.lng;
 
@@ -55,13 +38,14 @@ export function DiscoverRails() {
       params.set("lat", lat.toFixed(3));
       params.set("lng", lng.toFixed(3));
     }
-    const query = params.toString();
     const ctrl = new AbortController();
-    fetch(`/api/discover?${query}`, { signal: ctrl.signal })
-      .then((r) => (r.ok ? (r.json() as Promise<Discover>) : null))
-      .then((d) => d && setData(d))
-      .catch((err) => {
-        if ((err as Error).name !== "AbortError") console.error("discover failed", err);
+    api
+      .discover(params, ctrl.signal)
+      .then(setData)
+      .catch((err: unknown) => {
+        if (!(err instanceof DOMException && err.name === "AbortError")) {
+          console.error("discover failed", err);
+        }
       });
     return () => ctrl.abort();
   }, [hotel.id, lat, lng]);
@@ -75,19 +59,20 @@ export function DiscoverRails() {
     );
   }
 
-  const { weather, partOfDay } = data.context;
+  const { weather, partOfDay, location } = data.context;
+  const WeatherIcon = weather ? SKY_ICON[weather.sky] : null;
   // Formatted here (not on the server) so it follows the guest's chosen language.
   const weekdayName = new Intl.DateTimeFormat(lang, {
     weekday: "long",
     timeZone: hotel.timezone,
   }).format(new Date());
-  const WeatherIcon = weather ? SKY_ICON[weather.sky] : null;
-  const title = (r: Rail): string =>
-    r.kind === "now"
-      ? r.rainy
+
+  const title = (rail: Rail): string =>
+    rail.kind === "now"
+      ? rail.rainy
         ? s.railRain
-        : s.railNow[r.part]
-      : r.kind === "local"
+        : s.railNow[rail.part]
+      : rail.kind === "local"
         ? s.railLocal
         : s.railBudget;
 
@@ -96,7 +81,7 @@ export function DiscoverRails() {
       <div className="flex flex-wrap items-center justify-center gap-2">
         <span className="pc-chip min-h-8 text-[13px]">
           <MapPin aria-hidden className="size-3.5" strokeWidth={1.75} />
-          {data.context.location.label}
+          {location.label}
         </span>
         {WeatherIcon && weather && (
           <span className="pc-chip min-h-8 text-[13px]">
