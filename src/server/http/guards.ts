@@ -1,6 +1,6 @@
 import "server-only";
 import { sessionIdSchema } from "@/lib/schemas";
-import { HttpError } from "./errors";
+import { HttpError } from "@/server/http/errors";
 
 export const getRequestId = (req: Request): string =>
   req.headers.get("x-request-id")?.slice(0, 64) || crypto.randomUUID();

@@ -1,8 +1,8 @@
-import { getLiveContext } from "@/lib/context";
+import { getLiveContext } from "@/server/context/liveContext";
 import { haversineKm } from "@/lib/geo";
-import { areaName } from "@/lib/geocode";
+import { areaName } from "@/server/context/geocode";
 import { getHotel } from "@/lib/hotels";
-import { buildRails } from "@/lib/rails";
+import { buildRails } from "@/server/context/rails";
 import { userLocationSchema } from "@/lib/schemas";
 import { errorResponse } from "@/server/http/errors";
 import { getRequestId } from "@/server/http/guards";

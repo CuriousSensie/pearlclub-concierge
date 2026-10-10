@@ -3,15 +3,15 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 vi.mock("../db/usage", () => ({ incrementUsage: vi.fn() }));
 vi.mock("../env", () => ({ env: vi.fn() }));
 
-import { incrementUsage } from "../db/usage";
-import { env } from "../env";
+import { incrementUsage } from "@/server/db/usage";
+import { env } from "@/server/env";
 import {
   enforceChatLimit,
   enforceLookupLimit,
   enforceReadLimit,
   enforceWriteLimit,
   resetReadLimiter,
-} from "./rateLimit";
+} from "@/server/http/rateLimit";
 
 const baseEnv = {
   NODE_ENV: "production",

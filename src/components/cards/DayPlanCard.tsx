@@ -1,11 +1,11 @@
 "use client";
 
 import { BookmarkPlus, CloudRain, Footprints, Shuffle } from "lucide-react";
-import { useApp } from "../AppContext";
-import { MapCard } from "./MapCard";
-import { PlaceCard } from "./PlaceCard";
+import { useApp } from "@/components/chat/ConciergeContext";
+import { MapCard } from "@/components/cards/MapCard";
+import { PlaceCard } from "@/components/cards/PlaceCard";
 import { fill } from "@/lib/i18n";
-import type { DayPlanStop, TimeSlot } from "@/types";
+import type { DayPlanStop, TimeSlot } from "@/lib/types";
 
 /** "Saturday 3 October" in the guest's language; falls back to the raw string if it isn't a date. */
 function formatDate(iso: string, lang: string): string {

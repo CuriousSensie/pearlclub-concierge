@@ -1,8 +1,8 @@
 import "server-only";
 import { isLanguage } from "@/lib/i18n";
-import type { Profile } from "@/types";
-import { getSupabase } from "./client";
-import type { Database } from "./database.types";
+import type { Profile } from "@/lib/types";
+import { getSupabase } from "@/server/db/client";
+import type { Database } from "@/server/db/database.types";
 
 type ProfileRow = Database["public"]["Tables"]["profiles"]["Row"];
 

@@ -4,20 +4,20 @@ import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { useEffect, useState, type FormEvent } from "react";
 import { ArrowUp } from "lucide-react";
-import { BottomNav } from "./BottomNav";
-import { AppProvider, type AppState } from "./AppContext";
-import { Header } from "./Header";
-import { MessageBubble, getSuggestions } from "./MessageBubble";
-import { SuggestionChips } from "./SuggestionChips";
-import { TripDrawer } from "./TripDrawer";
-import { WelcomeScreen } from "./WelcomeScreen";
-import { useToast } from "./Toaster";
+import { BottomNav } from "@/components/layout/BottomNav";
+import { AppProvider, type AppState } from "@/components/chat/ConciergeContext";
+import { Header } from "@/components/layout/Header";
+import { MessageBubble, getSuggestions } from "@/components/chat/MessageBubble";
+import { SuggestionChips } from "@/components/chat/SuggestionChips";
+import { TripDrawer } from "@/components/trip/TripDrawer";
+import { WelcomeScreen } from "@/components/welcome/WelcomeScreen";
+import { useToast } from "@/components/ui/Toaster";
 import { getHotel } from "@/lib/hotels";
-import { slimMessages } from "@/lib/slimMessages";
-import { readLocalProfile, writeLocalProfile } from "@/lib/localProfile";
+import { slimMessages } from "@/client/slimMessages";
+import { readLocalProfile, writeLocalProfile } from "@/client/localProfile";
 import { fill, isLanguage, isRTL, t } from "@/lib/i18n";
-import { sessionHeaders } from "@/lib/session";
-import type { Booking, Language, Place, Profile, UserLocation } from "@/types";
+import { sessionHeaders } from "@/client/session";
+import type { Booking, Language, Place, Profile, UserLocation } from "@/lib/types";
 
 // Session and request body are resolved per send, so one transport serves every render.
 const transport = new DefaultChatTransport({

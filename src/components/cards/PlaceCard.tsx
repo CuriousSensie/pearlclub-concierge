@@ -3,12 +3,12 @@
 import clsx from "clsx";
 import { ExternalLink, Heart } from "lucide-react";
 import Image from "next/image";
-import { useApp } from "../AppContext";
-import { Curator, CuratorAvatar } from "../Curator";
-import { categoryEmoji } from "../icons";
+import { useApp } from "@/components/chat/ConciergeContext";
+import { Curator, CuratorAvatar } from "@/components/cards/Curator";
+import { categoryEmoji } from "@/components/ui/emoji";
 import { formatDistance } from "@/lib/geo";
 import { CITY_META } from "@/lib/hotels";
-import type { PlaceSummary } from "@/types";
+import type { PlaceSummary } from "@/lib/types";
 
 /** Flag + city code, category emoji and price: the footer facts on every Pearl Club card. */
 function Facts({ place }: { place: PlaceSummary }) {

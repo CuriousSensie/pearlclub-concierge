@@ -2,9 +2,9 @@
 
 import { Luggage } from "lucide-react";
 import Image from "next/image";
-import { LanguageSelector } from "./LanguageSelector";
-import { useApp } from "./AppContext";
-import type { Language } from "@/types";
+import { LanguageSelector } from "@/components/layout/LanguageSelector";
+import { useApp } from "@/components/chat/ConciergeContext";
+import type { Language } from "@/lib/types";
 
 /** Pearl Club's header: white bar with the logo. Language and My Trip live in the bottom bar on phones. */
 export function Header({

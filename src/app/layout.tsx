@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Cormorant, Karla, Noto_Naskh_Arabic, Space_Mono } from "next/font/google";
-import { ToastProvider } from "@/components/Toaster";
+import { ToastProvider } from "@/components/ui/Toaster";
 import "./globals.css";
 
 // Pearl Club's own type system: Karla for text, Space Mono for titles and labels,

@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from "react";
 import clsx from "clsx";
-import { useApp } from "./AppContext";
-import { PlaceCard } from "./cards/PlaceCard";
-import { sessionHeaders } from "@/lib/session";
-import type { Booking, Place } from "@/types";
+import { useApp } from "@/components/chat/ConciergeContext";
+import { PlaceCard } from "@/components/cards/PlaceCard";
+import { sessionHeaders } from "@/client/session";
+import type { Booking, Place } from "@/lib/types";
 
 type Tab = "saved" | "bookings";
 

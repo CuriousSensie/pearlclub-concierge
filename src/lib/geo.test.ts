@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatDistance, haversineKm } from "./geo";
+import { formatDistance, haversineKm } from "@/lib/geo";
 
 describe("haversineKm", () => {
   it("is zero for identical points", () => {

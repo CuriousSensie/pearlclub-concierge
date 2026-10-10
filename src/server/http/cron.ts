@@ -1,7 +1,7 @@
 import "server-only";
 import { timingSafeEqual } from "node:crypto";
-import { env } from "../env";
-import { HttpError } from "./errors";
+import { env } from "@/server/env";
+import { HttpError } from "@/server/http/errors";
 
 /**
  * Vercel Cron calls scheduled routes with `Authorization: Bearer $CRON_SECRET`.

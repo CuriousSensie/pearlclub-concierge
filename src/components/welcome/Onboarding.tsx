@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useApp } from "./AppContext";
-import { useToast } from "./Toaster";
-import { sessionHeaders } from "@/lib/session";
-import type { Profile } from "@/types";
+import { useApp } from "@/components/chat/ConciergeContext";
+import { useToast } from "@/components/ui/Toaster";
+import { sessionHeaders } from "@/client/session";
+import type { Profile } from "@/lib/types";
 
 type Draft = { travel_style: string | null; budget: string | null; interests: string[] };
 

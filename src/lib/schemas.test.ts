@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { LIMITS } from "./domain";
+import { LIMITS } from "@/lib/domain";
 import {
   bookingInputSchema,
   idSchema,
   isoDateSchema,
   parseChatMessages,
   sessionIdSchema,
-} from "./schemas";
+} from "@/lib/schemas";
 
 const userMessage = (text: string, id = "u1") => ({
   id,

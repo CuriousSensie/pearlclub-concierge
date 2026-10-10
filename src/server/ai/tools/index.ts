@@ -1,13 +1,13 @@
 import "server-only";
 import { tool } from "ai";
 import { z } from "zod";
-import { buildPlan } from "./planner";
-import { getPlacesByIds, searchPlaces } from "./places";
+import { buildPlan } from "@/server/ai/planner";
+import { getPlacesByIds, searchPlaces } from "@/server/db/places";
 import { upsertProfile } from "@/server/db/profiles";
-import { COVERED_CITIES, type Hotel } from "./hotels";
-import { CATEGORIES, TIME_SLOTS } from "./domain";
-import { idSchema } from "./schemas";
-import type { PlaceSummary, Profile, UserLocation } from "@/types";
+import { COVERED_CITIES, type Hotel } from "@/lib/hotels";
+import { CATEGORIES, TIME_SLOTS } from "@/lib/domain";
+import { idSchema } from "@/lib/schemas";
+import type { PlaceSummary, Profile, UserLocation } from "@/lib/types";
 
 export type ToolContext = {
   sessionId: string;

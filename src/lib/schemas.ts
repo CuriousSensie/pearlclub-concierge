@@ -1,6 +1,6 @@
 import type { UIMessage } from "ai";
 import { z } from "zod";
-import { BOOKING_TYPES, LANGUAGE_CODES, LIMITS, TOOL_NAMES } from "./domain";
+import { BOOKING_TYPES, LANGUAGE_CODES, LIMITS, TOOL_NAMES } from "@/lib/domain";
 
 /** Place and hotel-service ids (Dato ids, kebab-case slugs). Strict so they are safe in query filters. */
 export const idSchema = z.string().regex(/^[A-Za-z0-9_-]{1,40}$/, "Invalid id");

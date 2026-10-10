@@ -1,11 +1,11 @@
 "use client";
 
 import { ChevronRight, MapPin } from "lucide-react";
-import { useApp } from "./AppContext";
-import { DiscoverRails } from "./DiscoverRails";
-import { Onboarding } from "./Onboarding";
+import { useApp } from "@/components/chat/ConciergeContext";
+import { DiscoverRails } from "@/components/welcome/DiscoverRails";
+import { Onboarding } from "@/components/welcome/Onboarding";
 import { fill } from "@/lib/i18n";
-import type { Profile } from "@/types";
+import type { Profile } from "@/lib/types";
 
 export function WelcomeScreen({
   ready,

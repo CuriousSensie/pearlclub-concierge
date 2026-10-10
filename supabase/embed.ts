@@ -3,7 +3,7 @@ import { resolve } from "node:path";
 import { openai } from "@ai-sdk/openai";
 import { embedMany } from "ai";
 import { createClient } from "@supabase/supabase-js";
-import type { Place } from "../src/types";
+import type { Place } from "../src/lib/types";
 
 const BATCH = 100;
 

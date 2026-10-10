@@ -1,8 +1,8 @@
 "use client";
 
-import { useApp } from "./AppContext";
+import { useApp } from "@/components/chat/ConciergeContext";
 import { fill } from "@/lib/i18n";
-import type { Place } from "@/types";
+import type { Place } from "@/lib/types";
 
 /** The curator's photo as a ringed circle, like the avatars that overlap Pearl Club place photos. */
 export function CuratorAvatar({

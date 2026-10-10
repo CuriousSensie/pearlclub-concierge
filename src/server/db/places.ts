@@ -2,11 +2,11 @@ import "server-only";
 import { openai } from "@ai-sdk/openai";
 import { embed } from "ai";
 import { getSupabase } from "@/server/db/client";
-import { haversineKm } from "./geo";
-import { hasOpenAI } from "./model";
-import { idSchema } from "./schemas";
+import { haversineKm } from "@/lib/geo";
+import { hasOpenAI } from "@/server/ai/model";
+import { idSchema } from "@/lib/schemas";
 import type { Database } from "@/server/db/database.types";
-import type { Place, PlaceSummary } from "@/types";
+import type { Place, PlaceSummary } from "@/lib/types";
 
 /** Every Place field except the (large) embedding vector, which must never leave the database. */
 export const PLACE_COLUMNS =

@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { useApp } from "../AppContext";
-import type { Place } from "@/types";
+import { useApp } from "@/components/chat/ConciergeContext";
+import type { Place } from "@/lib/types";
 
 const FALLBACK_STYLE = "https://demotiles.maplibre.org/style.json";
 

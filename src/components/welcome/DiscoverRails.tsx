@@ -11,9 +11,9 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useApp } from "./AppContext";
-import { PlaceCard } from "./cards/PlaceCard";
-import type { PlaceSummary } from "@/types";
+import { useApp } from "@/components/chat/ConciergeContext";
+import { PlaceCard } from "@/components/cards/PlaceCard";
+import type { PlaceSummary } from "@/lib/types";
 
 type Part = "morning" | "lunch" | "afternoon" | "evening" | "night";
 type Sky = "clear" | "cloudy" | "fog" | "rain" | "snow" | "storm";

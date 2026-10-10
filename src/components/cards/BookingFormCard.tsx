@@ -2,11 +2,11 @@
 
 import { useState, type FormEvent } from "react";
 import { CircleCheck } from "lucide-react";
-import { useApp } from "../AppContext";
-import { useToast } from "../Toaster";
+import { useApp } from "@/components/chat/ConciergeContext";
+import { useToast } from "@/components/ui/Toaster";
 import { fill } from "@/lib/i18n";
-import { sessionHeaders } from "@/lib/session";
-import type { Booking, BookingFormData } from "@/types";
+import { sessionHeaders } from "@/client/session";
+import type { Booking, BookingFormData } from "@/lib/types";
 
 const CONTACT_KEY = "pc_guest_contact";
 

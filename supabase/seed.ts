@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { createClient } from "@supabase/supabase-js";
-import type { Place } from "../src/types";
+import type { Place } from "../src/lib/types";
 
 const BATCH = 200;
 

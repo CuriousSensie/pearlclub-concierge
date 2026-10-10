@@ -2,7 +2,7 @@ import { getHotel, HOTELS } from "@/lib/hotels";
 import { LIMITS } from "@/lib/domain";
 import { bookingInputSchema } from "@/lib/schemas";
 import { createBooking, listBookings } from "@/server/db/bookings";
-import { getPlacesByIds } from "@/lib/places";
+import { getPlacesByIds } from "@/server/db/places";
 import { HttpError, errorResponse } from "@/server/http/errors";
 import { getRequestId, readJson, requireSessionId } from "@/server/http/guards";
 import { enforceReadLimit, enforceWriteLimit } from "@/server/http/rateLimit";

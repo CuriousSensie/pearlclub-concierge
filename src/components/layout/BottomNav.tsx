@@ -2,8 +2,8 @@
 
 import { Plus } from "lucide-react";
 import { LANGUAGES, isLanguage } from "@/lib/i18n";
-import { useApp } from "./AppContext";
-import type { Language } from "@/types";
+import { useApp } from "@/components/chat/ConciergeContext";
+import type { Language } from "@/lib/types";
 
 /**
  * Pearl Club's mobile tab bar: emoji tabs and a gradient circular centre action.

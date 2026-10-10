@@ -1,4 +1,4 @@
-import { Chat } from "@/components/Chat";
+import { Chat } from "@/components/chat/Chat";
 import { getHotel } from "@/lib/hotels";
 
 export default async function Page({ searchParams }: PageProps<"/">) {

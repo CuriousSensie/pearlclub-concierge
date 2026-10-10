@@ -2,10 +2,10 @@
 
 import { Map as MapIcon } from "lucide-react";
 import { useState } from "react";
-import { useApp } from "../AppContext";
-import { MapCard } from "./MapCard";
-import { PlaceCard } from "./PlaceCard";
-import type { PlaceSummary } from "@/types";
+import { useApp } from "@/components/chat/ConciergeContext";
+import { MapCard } from "@/components/cards/MapCard";
+import { PlaceCard } from "@/components/cards/PlaceCard";
+import type { PlaceSummary } from "@/lib/types";
 
 export function PlaceCarousel({
   places,

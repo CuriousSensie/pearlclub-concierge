@@ -3,14 +3,20 @@
 import type { UIMessage } from "ai";
 import clsx from "clsx";
 import { Fragment, type ReactNode } from "react";
-import { useApp } from "./AppContext";
-import { BookingFormCard } from "./cards/BookingFormCard";
-import { DayPlanCard } from "./cards/DayPlanCard";
-import { HotelServicesCard } from "./cards/HotelServicesCard";
-import { MapCard } from "./cards/MapCard";
-import { PlaceCarousel } from "./cards/PlaceCarousel";
-import { PlaceCard } from "./cards/PlaceCard";
-import type { BookingFormData, DayPlanStop, HotelServiceInfo, Place, PlaceSummary } from "@/types";
+import { useApp } from "@/components/chat/ConciergeContext";
+import { BookingFormCard } from "@/components/cards/BookingFormCard";
+import { DayPlanCard } from "@/components/cards/DayPlanCard";
+import { HotelServicesCard } from "@/components/cards/HotelServicesCard";
+import { MapCard } from "@/components/cards/MapCard";
+import { PlaceCarousel } from "@/components/cards/PlaceCarousel";
+import { PlaceCard } from "@/components/cards/PlaceCard";
+import type {
+  BookingFormData,
+  DayPlanStop,
+  HotelServiceInfo,
+  Place,
+  PlaceSummary,
+} from "@/lib/types";
 
 /** Minimal markdown: **bold**, *italic*, [text](url), "- " lists, paragraphs. */
 function inline(text: string): ReactNode[] {

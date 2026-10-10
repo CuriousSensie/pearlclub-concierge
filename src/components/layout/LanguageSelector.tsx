@@ -2,7 +2,7 @@
 
 import { Globe } from "lucide-react";
 import { LANGUAGES, isLanguage } from "@/lib/i18n";
-import type { Language } from "@/types";
+import type { Language } from "@/lib/types";
 
 export function LanguageSelector({
   value,

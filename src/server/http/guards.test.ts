@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { HttpError } from "./errors";
-import { readJson, requireSessionId } from "./guards";
+import { HttpError } from "@/server/http/errors";
+import { readJson, requireSessionId } from "@/server/http/guards";
 
 const withHeaders = (headers: Record<string, string>) =>
   new Request("http://localhost/api/x", { headers });

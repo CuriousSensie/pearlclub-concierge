@@ -1,7 +1,7 @@
 import "server-only";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import { env } from "../env";
-import type { Database } from "./database.types";
+import { env } from "@/server/env";
+import type { Database } from "@/server/db/database.types";
 
 /** Upper bound for any single database request, so a stalled call cannot hold a function open. */
 const REQUEST_TIMEOUT_MS = 8_000;

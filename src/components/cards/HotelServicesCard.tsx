@@ -1,8 +1,8 @@
 "use client";
 
-import { useApp } from "../AppContext";
-import { serviceEmoji } from "../icons";
-import type { HotelServiceInfo } from "@/types";
+import { useApp } from "@/components/chat/ConciergeContext";
+import { serviceEmoji } from "@/components/ui/emoji";
+import type { HotelServiceInfo } from "@/lib/types";
 
 export function HotelServicesCard({ services }: { services: HotelServiceInfo[] }) {
   const { s, sendText } = useApp();

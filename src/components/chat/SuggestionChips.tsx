@@ -1,6 +1,6 @@
 "use client";
 
-import { useApp } from "./AppContext";
+import { useApp } from "@/components/chat/ConciergeContext";
 
 export function SuggestionChips({ suggestions }: { suggestions: string[] }) {
   const { sendText } = useApp();

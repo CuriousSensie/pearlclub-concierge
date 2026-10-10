@@ -1,5 +1,5 @@
 import "server-only";
-import { log } from "../logger";
+import { log } from "@/server/logger";
 
 /** An error that is safe to show to the client (4xx) or that maps to a generic message (5xx). */
 export class HttpError extends Error {

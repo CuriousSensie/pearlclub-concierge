@@ -10,20 +10,20 @@ import {
   type ModelMessage,
   type UIMessage,
 } from "ai";
-import { getLiveContext } from "@/lib/context";
-import { pickFastModel, pickModel } from "@/lib/model";
+import { getLiveContext } from "@/server/context/liveContext";
+import { pickFastModel, pickModel } from "@/server/ai/model";
 import { getHotel } from "@/lib/hotels";
 import { LIMITS } from "@/lib/domain";
 import { isLanguage } from "@/lib/i18n";
 import { parseChatMessages } from "@/lib/schemas";
-import { buildFollowupPrompt, buildSystemPrompt } from "@/lib/prompts";
+import { buildFollowupPrompt, buildSystemPrompt } from "@/server/ai/prompts";
 import { getProfile } from "@/server/db/profiles";
-import { getSavedPlaces } from "@/lib/places";
+import { getSavedPlaces } from "@/server/db/places";
 import { HttpError, errorResponse } from "@/server/http/errors";
 import { getRequestId, readJson, requireSessionId } from "@/server/http/guards";
 import { enforceChatLimit } from "@/server/http/rateLimit";
 import { log } from "@/server/logger";
-import { createTools } from "@/lib/tools";
+import { createTools } from "@/server/ai/tools";
 
 export const maxDuration = 30;
 

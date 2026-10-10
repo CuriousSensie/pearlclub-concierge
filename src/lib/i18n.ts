@@ -1,4 +1,4 @@
-import type { Language } from "@/types";
+import type { Language } from "@/lib/types";
 
 export const LANGUAGES: { code: Language; name: string; flag: string; english: string }[] = [
   { code: "en", name: "English", flag: "🇬🇧", english: "English" },

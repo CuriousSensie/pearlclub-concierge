@@ -1,8 +1,8 @@
 import "server-only";
-import { haversineKm } from "./geo";
-import { getPlacesByIds, searchPlaces } from "./places";
-import type { Hotel } from "./hotels";
-import type { PlaceSummary, TimeSlot } from "@/types";
+import { haversineKm } from "@/lib/geo";
+import { getPlacesByIds, searchPlaces } from "@/server/db/places";
+import type { Hotel } from "@/lib/hotels";
+import type { PlaceSummary, TimeSlot } from "@/lib/types";
 
 export type PlannedStop = {
   time_slot: TimeSlot;

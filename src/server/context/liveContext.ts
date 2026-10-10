@@ -1,5 +1,5 @@
 import "server-only";
-import type { Hotel } from "./hotels";
+import type { Hotel } from "@/lib/hotels";
 
 export type PartOfDay = "morning" | "lunch" | "afternoon" | "evening" | "night";
 export type Sky = "clear" | "cloudy" | "fog" | "rain" | "snow" | "storm";

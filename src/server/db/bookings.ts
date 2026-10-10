@@ -2,8 +2,8 @@ import "server-only";
 import { getSupabase } from "@/server/db/client";
 import type { BookingInput } from "@/lib/schemas";
 import { BOOKING_STATUSES, BOOKING_TYPES } from "@/lib/domain";
-import type { Booking } from "@/types";
-import type { Database } from "./database.types";
+import type { Booking } from "@/lib/types";
+import type { Database } from "@/server/db/database.types";
 
 type BookingRow = Database["public"]["Tables"]["bookings"]["Row"];
 

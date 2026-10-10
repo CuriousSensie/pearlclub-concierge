@@ -3,7 +3,7 @@
 import { createContext, useContext } from "react";
 import type { Hotel } from "@/lib/hotels";
 import type { Strings } from "@/lib/i18n";
-import type { Booking, Language, Place, UserLocation } from "@/types";
+import type { Booking, Language, Place, UserLocation } from "@/lib/types";
 
 export type AppState = {
   hotel: Hotel;

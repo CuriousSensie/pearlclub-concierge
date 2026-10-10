@@ -1,4 +1,4 @@
-import type { Profile } from "@/types";
+import type { Profile } from "@/lib/types";
 
 const KEY = "pc_profile";
 

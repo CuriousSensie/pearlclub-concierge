@@ -1,7 +1,7 @@
-import { COVERED_CITIES, type Hotel } from "./hotels";
-import type { LiveContext } from "./context";
-import { languageEnglishName } from "./i18n";
-import type { Language, Place, Profile, UserLocation } from "@/types";
+import { COVERED_CITIES, type Hotel } from "@/lib/hotels";
+import type { LiveContext } from "@/server/context/liveContext";
+import { languageEnglishName } from "@/lib/i18n";
+import type { Language, Place, Profile, UserLocation } from "@/lib/types";
 
 type PromptInput = {
   hotel: Hotel;

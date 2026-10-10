@@ -1,7 +1,7 @@
 import "server-only";
-import { incrementUsage } from "../db/usage";
-import { env } from "../env";
-import { HttpError } from "./errors";
+import { incrementUsage } from "@/server/db/usage";
+import { env } from "@/server/env";
+import { HttpError } from "@/server/http/errors";
 
 /**
  * Counters live in the `usage` table under namespaced keys. Session ids are validated to a charset

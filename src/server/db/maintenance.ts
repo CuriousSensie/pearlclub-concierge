@@ -1,5 +1,5 @@
 import "server-only";
-import { getSupabase } from "./client";
+import { getSupabase } from "@/server/db/client";
 
 /** Deletes expired rate-limit counters and old booking requests; returns how many rows went. */
 export async function purgeExpired(): Promise<{ usage: number; bookings: number }> {

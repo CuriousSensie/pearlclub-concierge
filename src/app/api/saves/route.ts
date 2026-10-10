@@ -1,5 +1,5 @@
 import { LIMITS } from "@/lib/domain";
-import { getPlacesByIds, getSavedPlaces } from "@/lib/places";
+import { getPlacesByIds, getSavedPlaces } from "@/server/db/places";
 import { idSchema, saveRequestSchema } from "@/lib/schemas";
 import { removeSavedPlace, savePlaces } from "@/server/db/saves";
 import { HttpError, errorResponse } from "@/server/http/errors";
