@@ -12,6 +12,11 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Generated or non-JS content.
+    "public/**",
+    "scraper/**",
+    "coverage/**",
+    "docs/**",
   ]),
 ]);
 

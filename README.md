@@ -64,18 +64,18 @@ flowchart LR
 
 ## Brief → feature mapping
 
-| Brief requirement | Implemented as |
-|---|---|
-| Conversational interface | Streaming chat via Vercel AI SDK + OpenAI, with rich cards |
-| Pearl Club content | Scraper → JSON → Supabase `places` → `search_places` / `plan_day` |
-| Personalisation | Profile, saved places, browser location and weather in the prompt; distance and interest ranking |
-| Hotel concierge bookings | `propose_booking` → prefilled form → `/api/bookings` → Supabase → My Trip |
-| Multilingual | Six languages, replies in the chosen language, RTL layout |
-| Context-aware recommendations | Time of day, weather and location shape the welcome rails, search and plans |
-| Location-based suggestions | Geolocation, distance on cards and a neighbourhood label |
-| Greeting and menu flow | Welcome screen with four menu chips |
-| Follow-up interaction | A dedicated follow-up pass produces tappable chips every turn |
-| Hotel services | Per-hotel service list rendered as request cards |
+| Brief requirement             | Implemented as                                                                                   |
+| ----------------------------- | ------------------------------------------------------------------------------------------------ |
+| Conversational interface      | Streaming chat via Vercel AI SDK + OpenAI, with rich cards                                       |
+| Pearl Club content            | Scraper → JSON → Supabase `places` → `search_places` / `plan_day`                                |
+| Personalisation               | Profile, saved places, browser location and weather in the prompt; distance and interest ranking |
+| Hotel concierge bookings      | `propose_booking` → prefilled form → `/api/bookings` → Supabase → My Trip                        |
+| Multilingual                  | Six languages, replies in the chosen language, RTL layout                                        |
+| Context-aware recommendations | Time of day, weather and location shape the welcome rails, search and plans                      |
+| Location-based suggestions    | Geolocation, distance on cards and a neighbourhood label                                         |
+| Greeting and menu flow        | Welcome screen with four menu chips                                                              |
+| Follow-up interaction         | A dedicated follow-up pass produces tappable chips every turn                                    |
+| Hotel services                | Per-hotel service list rendered as request cards                                                 |
 
 ## Running locally
 
@@ -92,12 +92,12 @@ npm run dev
 
 Re-scrape (optional): `cd scraper && python -m venv .venv && . .venv/bin/activate && pip install -r requirements.txt && playwright install chromium && python scrape.py && python normalize.py`
 
-| Variable | Purpose |
-|---|---|
-| `OPENAI_API_KEY`, `OPENAI_MODEL` | Chat model (a fast tool-calling model; `gpt-4.1-mini` works well). Optional `OPENAI_FAST_MODEL` for follow-up chips |
-| `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` | Database (server only; the service key is never sent to the browser) |
-| `NEXT_PUBLIC_MAPTILER_KEY` | Map tiles |
-| `MAX_MESSAGES_PER_SESSION`, `MAX_MESSAGES_PER_IP_PER_DAY`, `MAX_MESSAGES_PER_DAY` | Usage caps |
+| Variable                                                                          | Purpose                                                                                                             |
+| --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `OPENAI_API_KEY`, `OPENAI_MODEL`                                                  | Chat model (a fast tool-calling model; `gpt-4.1-mini` works well). Optional `OPENAI_FAST_MODEL` for follow-up chips |
+| `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`                           | Database (server only; the service key is never sent to the browser)                                                |
+| `NEXT_PUBLIC_MAPTILER_KEY`                                                        | Map tiles                                                                                                           |
+| `MAX_MESSAGES_PER_SESSION`, `MAX_MESSAGES_PER_IP_PER_DAY`, `MAX_MESSAGES_PER_DAY` | Usage caps                                                                                                          |
 
 Without an OpenAI key the app can fall back to Google Gemini (`GOOGLE_GENERATIVE_AI_API_KEY`, `AI_MODELS`); vector search is then replaced by keyword search.
 
