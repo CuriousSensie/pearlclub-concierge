@@ -1,5 +1,4 @@
 import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
 import { openai } from "@ai-sdk/openai";
 import { embedMany } from "ai";
 import { adminClient } from "./lib";
